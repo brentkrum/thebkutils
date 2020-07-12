@@ -1,4 +1,7 @@
-package com.thebk.utils.parambag
+package com.thebk.utils.parambag;
+
+import io.netty.util.AbstractReferenceCounted;
+import io.netty.util.ReferenceCountUtil;
 
 public abstract class ParamBag<Subclass extends ParamBag> extends AbstractReferenceCounted {
 	private static final int MAX_NUM_PARAMS = Integer.parseInt(System.getProperty("com.bk.db.concurrent.ParamBag.max-num-params", "24"));

@@ -1,4 +1,4 @@
-package com.thebk.utils;
+package com.thebk.utils.queue;
 
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 

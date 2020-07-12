@@ -1,5 +1,7 @@
 package com.thebk.utils.concurrent;
 
+import com.thebk.utils.parambag.ParamBag;
+import com.thebk.utils.parambag.ParamDataBag;
 import io.netty.util.*;
 
 import java.util.Iterator;

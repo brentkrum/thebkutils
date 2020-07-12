@@ -1,4 +1,6 @@
-package com.thebk.utils;
+package com.thebk.utils.queue;
+
+import com.thebk.utils.rc.RCBoolean;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
@@ -32,11 +34,11 @@ public class MPSCFixedQueue {
 
 
 
-	public boolean enqueue(Object o, RCBoolOutParam committed) {
+	public boolean enqueue(Object o, RCBoolean committed) {
 		long w = m_writableCountUpdater.decrementAndGet(this);
 		if (w < 0) {
 			m_writableCountUpdater.incrementAndGet(this);
-			committed.value = false;
+			committed.set(false);
 			return false;
 		}
 		long indexLong = m_writeableIndexUpdater.getAndIncrement(this); // Get current value THEN increment
@@ -52,7 +54,7 @@ public class MPSCFixedQueue {
 		}
 		// This thread is the committer
 		// We skip updating ourselves to 1, we will go directly to 2
-		committed.value = true;
+		committed.set(true);
 
 		int numUpdated = 1;
 		long nextIndexLong = indexLong;

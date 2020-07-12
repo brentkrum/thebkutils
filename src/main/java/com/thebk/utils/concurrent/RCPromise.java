@@ -1,20 +1,23 @@
 package com.thebk.utils.concurrent;
 
-import com.neuron.core.NeuronApplication;
-import io.netty.channel.EventLoopGroup;
+import com.thebk.utils.DefaultSystems;
+import com.thebk.utils.rc.RCInteger;
+import com.thebk.utils.parambag.CallbackParamBag;
+import com.thebk.utils.parambag.ParamBag;
 import io.netty.util.*;
 import io.netty.util.concurrent.FastThreadLocal;
 import io.netty.util.internal.PlatformDependent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Queue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 public class RCPromise<T> extends AbstractReferenceCounted implements RCFuture<T> {
     private static final int MAX_NOTIFY_DEPTH = Integer.parseInt(System.getProperty("com.bk.db.concurrent.RCPromise.max-notify-depth", "8"));
-    private static final Logger LOG = LogManager.getLogger(RCPromise.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RCPromise.class);
     private static final ResourceLeakDetector<RCPromise> PROMISE_LEAK_DETECT = ResourceLeakDetectorFactory.instance().newResourceLeakDetector(RCPromise.class, 1);
     private static final Recycler<RCPromise> PROMISE_RECYCLER = new Recycler<RCPromise>() {
         @Override
@@ -37,7 +40,7 @@ public class RCPromise<T> extends AbstractReferenceCounted implements RCFuture<T
 
     private ResourceLeakTracker<RCPromise> m_leakTracker;
 
-    private EventLoopGroup m_eventGroup;
+    private Executor m_executor;
     private volatile Object m_result;
     private volatile int m_notifyingListeners;
     private int m_numWaiting;
@@ -47,22 +50,22 @@ public class RCPromise<T> extends AbstractReferenceCounted implements RCFuture<T
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> RCPromise<T> create(EventLoopGroup eventGroup) {
+    public static <T> RCPromise<T> create(Executor executor) {
         RCPromise<T> promise = PROMISE_RECYCLER.get();
-        promise.init(eventGroup);
+        promise.init(executor);
         return promise;
     }
 
     @SuppressWarnings("unchecked")
     public static <T> RCPromise<T> create() {
         RCPromise<T> promise = PROMISE_RECYCLER.get();
-        promise.init(NeuronApplication.getTaskPool());
+        promise.init(DefaultSystems.taskExecutor());
         return promise;
     }
 
-    private void init(EventLoopGroup eventGroup) {
+    private void init(Executor executor) {
         m_leakTracker = PROMISE_LEAK_DETECT.track(this);
-        m_eventGroup = eventGroup;
+        m_executor = executor;
     }
 
     public RCPromise<T> setSuccess(T result) {
@@ -290,14 +293,14 @@ public class RCPromise<T> extends AbstractReferenceCounted implements RCFuture<T
 
         RCInteger current = m_notifyDepth.get();
         if (current == null) {
-            current = RCInteger.create(0);
+            current = RCInteger.create(1);
             m_notifyDepth.set(current);
         } else {
             current.increment();
         }
         // Add a ref in case the last ref is released with a listener
         retain();
-        final boolean callDirect = (current.value() < MAX_NOTIFY_DEPTH);
+        final boolean callDirect = (current.value() <= MAX_NOTIFY_DEPTH);
         while (true) {
             ListenerWrapperBase w = m_listeners.poll();
             if (w == null) {
@@ -313,7 +316,7 @@ public class RCPromise<T> extends AbstractReferenceCounted implements RCFuture<T
                 w.run();
             } else {
                 // Pending listener executions hold a ref to the future to keep it alive
-                m_eventGroup.execute(w);
+                m_executor.execute(w);
             }
         }
         if (current.decrement() == 0) {
@@ -360,7 +363,7 @@ public class RCPromise<T> extends AbstractReferenceCounted implements RCFuture<T
             m_leakTracker.close(this);
             m_leakTracker = null;
         }
-        m_eventGroup = null;
+        m_executor = null;
         if (m_result instanceof CauseWrapper) {
             ((CauseWrapper) m_result).recycle();
         }
@@ -467,11 +470,12 @@ public class RCPromise<T> extends AbstractReferenceCounted implements RCFuture<T
         @Override
         public void run() {
         	if (listener == null) {
-        		// Ref passed into CallbackParamBag
+        		// Executor ref passed into CallbackParamBag
         		params.po(promise);
 				((CallbackParamBag)params).callback();
 			} else {
 				promise.notifyListener0(listener, params);
+				// Release the ref added before submitting to the executor
 				promise.release();
 			}
             recycle();

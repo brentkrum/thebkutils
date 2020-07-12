@@ -1,4 +1,7 @@
-package com.thebk.utils;
+package com.thebk.utils.queue;
+
+import com.thebk.utils.concurrent.LinkedTSNonBlockingRefCounter;
+import com.thebk.utils.rc.RCBoolean;
 
 public class MPSCUnboundedQueue {
 	private volatile LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> m_currentWrite = null;
@@ -7,7 +10,7 @@ public class MPSCUnboundedQueue {
 		m_currentWrite = new LinkedTSNonBlockingRefCounter<>(InternalMPSCFixedOneShotQueue.create());
 	}
 
-	public boolean enqueue(Object o, RCBoolOutParam committed) {
+	public boolean enqueue(Object o, RCBoolean committed) {
 		while(true) {
 			// m_currentWrite is never null
 			LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> currentWrite = m_currentWrite;

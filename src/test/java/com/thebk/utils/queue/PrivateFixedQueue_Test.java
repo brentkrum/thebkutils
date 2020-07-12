@@ -1,5 +1,7 @@
-package com.thebk.utils;
+package com.thebk.utils.queue;
 
+import com.thebk.utils.TestBase;
+import com.thebk.utils.queue.PrivateFixedQueue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

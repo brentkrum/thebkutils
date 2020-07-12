@@ -1,5 +1,7 @@
 package com.thebk.utils.concurrent;
 
+import com.thebk.utils.parambag.CallbackParamBag;
+import com.thebk.utils.parambag.ParamBag;
 import io.netty.util.*;
 
 public class RCSucceededFuture<T> extends AbstractReferenceCounted implements RCFuture<T> {
@@ -64,13 +66,21 @@ public class RCSucceededFuture<T> extends AbstractReferenceCounted implements RC
 
 	@Override
 	public RCFuture<T> addChain(RCPromise<T> chain) {
-		chain.setSuccess(m_result).release();
+		try {
+			chain.trySuccess(m_result);
+		} finally {
+			chain.release();
+		}
 		return this;
 	}
 
 	@Override
 	public RCFuture<T> addTriggerSuccess(RCPromise<Void> trigger) {
-		trigger.setSuccess(null).release();
+		try {
+			trigger.trySuccess(null);
+		} finally {
+			trigger.release();
+		}
 		return this;
 	}
 

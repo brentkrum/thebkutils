@@ -1,11 +1,11 @@
-package com.thebk.utils;
+package com.thebk.utils.list;
 
-import com.neuron.core.NeuronApplication;
+
+import com.thebk.utils.DefaultSystems;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 public final class FastLinkedList<T> {
 	private final int m_maxCount; 
@@ -37,7 +37,7 @@ public final class FastLinkedList<T> {
 		}
 		if (callbacks != null) {
 			for(Runnable r : callbacks) {
-				NeuronApplication.getTaskPool().execute(r);
+				DefaultSystems.taskExecutor().execute(r);
 			}
 		}		
 	}
@@ -180,7 +180,7 @@ public final class FastLinkedList<T> {
 		o.clearListNextPrev();
 		if (callbacks != null) {
 			for(Runnable r : callbacks) {
-				NeuronApplication.getTaskPool().execute(r);
+				DefaultSystems.taskExecutor().execute(r);
 			}
 		}
 		return o.getObject();
@@ -205,7 +205,7 @@ public final class FastLinkedList<T> {
 		o.clearListNextPrev();
 		if (callbacks != null) {
 			for(Runnable r : callbacks) {
-				NeuronApplication.getTaskPool().execute(r);
+				DefaultSystems.taskExecutor().execute(r);
 			}
 		}
 		return o.getObject();
@@ -229,7 +229,7 @@ public final class FastLinkedList<T> {
 		o.clearListNextPrev();
 		if (callbacks != null) {
 			for(Runnable r : callbacks) {
-				NeuronApplication.getTaskPool().execute(r);
+				DefaultSystems.taskExecutor().execute(r);
 			}
 		}
 		return true;

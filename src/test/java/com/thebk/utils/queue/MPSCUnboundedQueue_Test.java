@@ -1,6 +1,8 @@
-package com.thebk.utils;
+package com.thebk.utils.queue;
 
 import com.denaliai.fw.utility.concurrent.RCPromise;
+import com.thebk.utils.rc.RCBoolean;
+import com.thebk.utils.TestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,10 +12,10 @@ public class MPSCUnboundedQueue_Test extends TestBase {
 	@Test
 	public void simple() {
 		MPSCUnboundedQueue q = new MPSCUnboundedQueue();
-		RCBoolOutParam committed = RCBoolOutParam.create(false);
+		RCBoolean committed = RCBoolean.create(false);
 
 		int value = 1;
-		for(int i=0; i<InternalMPSCFixedOneShotQueue.QUEUE_SLICE_SIZE; i++) {
+		for(int i = 0; i< InternalMPSCFixedOneShotQueue.QUEUE_SLICE_SIZE; i++) {
 			Assertions.assertTrue(q.enqueue(new Integer(value++), committed));
 			Assertions.assertTrue(committed.value);
 		}
@@ -74,7 +76,7 @@ public class MPSCUnboundedQueue_Test extends TestBase {
 		}
 
 		private void _run() {
-			RCBoolOutParam comitted = RCBoolOutParam.create(false);
+			RCBoolean comitted = RCBoolean.create(false);
 			for(int i=0; i<NUM_TO_PRODUCE; i++) {
 				if (!m_q.enqueue(new Message(m_index, i), comitted)) {
 					throw new RuntimeException("Should not happen");

@@ -1,5 +1,6 @@
-package com.thebk.utils;
+package com.thebk.utils.queue;
 
+import com.thebk.utils.rc.RCBoolean;
 import io.netty.util.*;
 
 import java.util.concurrent.atomic.*;
@@ -53,10 +54,10 @@ class InternalMPSCFixedOneShotQueue extends AbstractReferenceCounted {
 		return (m_writeableIndex >= m_maxQueueSize);
 	}
 
-	public boolean enqueue(Object o, RCBoolOutParam committed) {
+	public boolean enqueue(Object o, RCBoolean committed) {
 		long indexLong = m_writeableIndexUpdater.getAndIncrement(this); // Get current value THEN increment
 		if (indexLong >= m_maxQueueSize) {
-			committed.value = false;
+			committed.set(false);
 			return false;
 		}
 		int index = (int)indexLong;
@@ -71,7 +72,7 @@ class InternalMPSCFixedOneShotQueue extends AbstractReferenceCounted {
 		}
 		// This thread is the committer
 		// We skip updating ourselves to 1, we will go directly to 2
-		committed.value = true;
+		committed.set(true);
 
 		int numUpdated = 1;
 		long nextIndexLong = indexLong;

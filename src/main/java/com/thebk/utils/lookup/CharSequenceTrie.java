@@ -1,4 +1,4 @@
-package com.thebk.utils;
+package com.thebk.utils.lookup;
 
 import java.util.Arrays;
 

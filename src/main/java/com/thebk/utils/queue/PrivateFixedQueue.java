@@ -1,4 +1,9 @@
-package com.thebk.utils;
+package com.thebk.utils.queue;
+
+import io.netty.util.ReferenceCountUtil;
+import io.netty.util.ReferenceCounted;
+
+import java.util.Arrays;
 
 public class PrivateFixedQueue {
 	private final Object m_values[];
@@ -15,6 +20,14 @@ public class PrivateFixedQueue {
 		m_maxQueueSize = maxQueueSize;
 		m_values = new Object[maxQueueSize];
 		m_writableCount = maxQueueSize;
+	}
+
+	public boolean isFull() {
+		return (m_writableCount != 0);
+	}
+
+	public boolean isEmpty() {
+		return (m_readableCount == 0);
 	}
 
 	public boolean enqueue(Object o) {
@@ -50,4 +63,12 @@ public class PrivateFixedQueue {
 		return m_values[index];
 	}
 
+	public void clear() {
+		while(!isEmpty()) {
+			Object o = dequeue();
+			if (o instanceof ReferenceCounted) {
+				ReferenceCountUtil.safeRelease(o);
+			}
+		}
+	}
 }

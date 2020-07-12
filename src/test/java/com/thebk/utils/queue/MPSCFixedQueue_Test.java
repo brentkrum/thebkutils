@@ -1,6 +1,8 @@
-package com.thebk.utils;
+package com.thebk.utils.queue;
 
 import com.denaliai.fw.utility.concurrent.RCPromise;
+import com.thebk.utils.rc.RCBoolean;
+import com.thebk.utils.TestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +11,7 @@ public class MPSCFixedQueue_Test extends TestBase {
 	@Test
 	public void simple() {
 		MPSCFixedQueue q = new MPSCFixedQueue(2);
-		RCBoolOutParam committed = RCBoolOutParam.create(false);
+		RCBoolean committed = RCBoolean.create(false);
 
 		Assertions.assertTrue(q.enqueue(new Integer(1), committed));
 		Assertions.assertTrue(committed.value);
@@ -83,7 +85,7 @@ public class MPSCFixedQueue_Test extends TestBase {
 		}
 
 		private void _run() {
-			RCBoolOutParam comitted = RCBoolOutParam.create(false);
+			RCBoolean comitted = RCBoolean.create(false);
 			for(int i=0; i<20000; i++) {
 				RCPromise<Void> p = RCPromise.create();
 				if (!m_q.enqueue(p, comitted)) {

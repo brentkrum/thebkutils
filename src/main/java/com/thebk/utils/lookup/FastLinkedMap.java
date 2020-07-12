@@ -1,12 +1,11 @@
-package com.thebk.utils;
+package com.thebk.utils.lookup;
 
-import com.neuron.core.NeuronApplication;
+import com.thebk.utils.DefaultSystems;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 public final class FastLinkedMap<T> {
 	private volatile int m_count;
@@ -34,7 +33,7 @@ public final class FastLinkedMap<T> {
 		}
 		if (callbacks != null) {
 			for(Runnable r : callbacks) {
-				NeuronApplication.getTaskPool().execute(r);
+				DefaultSystems.taskExecutor().execute(r);
 			}
 		}		
 	}
@@ -178,7 +177,7 @@ public final class FastLinkedMap<T> {
 		o.clearListNextPrev();
 		if (callbacks != null) {
 			for(Runnable r : callbacks) {
-				NeuronApplication.getTaskPool().execute(r);
+				DefaultSystems.taskExecutor().execute(r);
 			}
 		}
 		return o.getObject();
@@ -203,7 +202,7 @@ public final class FastLinkedMap<T> {
 		o.clearListNextPrev();
 		if (callbacks != null) {
 			for(Runnable r : callbacks) {
-				NeuronApplication.getTaskPool().execute(r);
+				DefaultSystems.taskExecutor().execute(r);
 			}
 		}
 		return o.getObject();
@@ -227,7 +226,7 @@ public final class FastLinkedMap<T> {
 		o.clearListNextPrev();
 		if (callbacks != null) {
 			for(Runnable r : callbacks) {
-				NeuronApplication.getTaskPool().execute(r);
+				DefaultSystems.taskExecutor().execute(r);
 			}
 		}
 		return true;

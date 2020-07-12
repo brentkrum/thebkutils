@@ -1,5 +1,7 @@
 package com.thebk.utils.concurrent;
 
+import com.thebk.utils.parambag.CallbackParamBag;
+import com.thebk.utils.parambag.ParamBag;
 import io.netty.util.*;
 
 public class RCFailedFuture<T> extends AbstractReferenceCounted implements RCFuture<T> {
@@ -33,7 +35,7 @@ public class RCFailedFuture<T> extends AbstractReferenceCounted implements RCFut
 	}
 
 	@Override
-	public RCFailedFuture<T> addListener(RCFutureListener<T> listener, ParamBag params) {
+	public RCFailedFuture<T> addListener(RCFutureListenerWithParams<T> listener, ParamBag params) {
 		// Just call it directly
 		listener.operationComplete(this, params);
 		return this;
@@ -42,7 +44,52 @@ public class RCFailedFuture<T> extends AbstractReferenceCounted implements RCFut
 	@Override
 	public RCFailedFuture<T> addListener(RCFutureListener<T> listener) {
 		// Just call it directly
-		listener.operationComplete(this, null);
+		listener.operationComplete(this);
+		return this;
+	}
+
+	/**
+	 *
+	 * @param params - params's passed-in ref is passed to the callback in the CallbackParamBag
+	 *
+	 * @return
+	 */
+	@Override
+	public RCFuture<T> addListener(CallbackParamBag params) {
+		// Ref passed to callback()
+		params.callback();
+		return this;
+	}
+
+	/**
+	 *
+	 * @param chain - chain's passed-in ref is owned by RCFailedFuture
+	 *
+	 * @return
+	 */
+	@Override
+	public RCFuture<T> addChain(RCPromise<T> chain) {
+		try {
+			chain.tryFailure(m_cause);
+		} finally {
+			chain.release();
+		}
+		return this;
+	}
+
+	/**
+	 *
+	 * @param trigger - trigger's passed-in ref is owned by RCFailedFuture
+	 *
+	 * @return
+	 */
+	@Override
+	public RCFuture<T> addTriggerSuccess(RCPromise<Void> trigger) {
+		try {
+			trigger.trySuccess(null);
+		} finally {
+			trigger.release();
+		}
 		return this;
 	}
 
@@ -94,6 +141,7 @@ public class RCFailedFuture<T> extends AbstractReferenceCounted implements RCFut
 	protected void deallocate() {
 		if (m_leakTracker != null) {
 			m_leakTracker.close(this);
+			m_leakTracker = null;
 		}
 		m_cause = null;
 

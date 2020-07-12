@@ -5,8 +5,8 @@ import java.net.URL;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MinimalHTTPSRequest {
 
@@ -31,7 +31,7 @@ public class MinimalHTTPSRequest {
 	}
 
 	public static String get(String host, int port, String file) {
-		final Logger LOG = LogManager.getLogger(MinimalHTTPSRequest.class.getName() + "." + host);
+		final Logger LOG = LoggerFactory.getLogger(MinimalHTTPSRequest.class.getName() + "." + host);
 		final SocketFactory factory = SSLSocketFactory.getDefault();
 		return MinimalHTTPRequest.get(factory, host, port, file, LOG);
 	}

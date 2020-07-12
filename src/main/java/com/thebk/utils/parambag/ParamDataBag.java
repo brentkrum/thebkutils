@@ -1,4 +1,4 @@
-package com.thebk.utils.parambag
+package com.thebk.utils.parambag;
 
 import io.netty.util.*;
 

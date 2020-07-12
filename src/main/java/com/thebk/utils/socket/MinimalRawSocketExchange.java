@@ -1,6 +1,6 @@
 package com.thebk.utils.socket;
 
-import com.denaliai.fw.Application;
+import com.thebk.utils.DefaultSystems;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 
@@ -15,7 +15,7 @@ public class MinimalRawSocketExchange {
 		OutputStream out = socket.getOutputStream();
 		out.write(outData.getBytes());
 		InputStream in = socket.getInputStream();
-		ByteBuf inData = Application.allocateIOBuffer();
+		ByteBuf inData = DefaultSystems.allocator().buffer();
 		byte[] scratch = new byte[1024];
 		while(true) {
 			int numRead = in.read(scratch);

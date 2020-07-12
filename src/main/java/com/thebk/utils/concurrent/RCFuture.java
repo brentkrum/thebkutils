@@ -1,5 +1,7 @@
 package com.thebk.utils.concurrent;
 
+import com.thebk.utils.parambag.CallbackParamBag;
+import com.thebk.utils.parambag.ParamBag;
 import io.netty.util.ReferenceCounted;
 
 public interface RCFuture<T> extends ReferenceCounted {
