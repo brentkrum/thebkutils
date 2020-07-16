@@ -123,23 +123,19 @@ public abstract class PerpetualWork
 			} finally {
 				m_currentWorker = null;
 				// Set tick to 0 only if it matches the starting tick
-				if (m_currentWorkTick.compareAndSet(lastRequestTick, 0) == false)
-				{
-					// Starting tick didn't match, so we got another request for work while running
-					if (numProcessed >= m_maxNumWorkPerRun) {
-						m_executor.execute(this);
-						return false;
-					} else {
-						// We are staying in the loop, restore so we don't have to hit API
-						m_currentWorker = saveWorker;
-						return true;
-					}
-				}
-				else
+				if (m_currentWorkTick.compareAndSet(lastRequestTick, 0) == true)
 				{
 					// No work requested, stopping work
 					return false;
 				}
+				// Starting tick didn't match, so we got another request for work while running
+				if (numProcessed >= m_maxNumWorkPerRun) {
+					m_executor.execute(this);
+					return false;
+				}
+				// We are staying in the loop, restore so we don't have to hit API
+				m_currentWorker = saveWorker;
+				return true;
 			}
 		}
 

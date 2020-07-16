@@ -1,11 +1,12 @@
 package com.thebk.utils.queue;
 
+import com.thebk.utils.rc.RCBoolean;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
 
 import java.util.Arrays;
 
-public class PrivateFixedQueue {
+public class PrivateFixedQueue implements TheBKQueue {
 	private final Object m_values[];
 	private final int m_maxQueueSize;
 	private long m_writableCount;
@@ -22,14 +23,23 @@ public class PrivateFixedQueue {
 		m_writableCount = maxQueueSize;
 	}
 
+	@Override
 	public boolean isFull() {
-		return (m_writableCount != 0);
+		return (m_writableCount == 0);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return (m_readableCount == 0);
 	}
 
+	@Override
+	public boolean enqueue(Object o, RCBoolean committed) {
+		committed.set(true);
+		return enqueue(o);
+	}
+
+	@Override
 	public boolean enqueue(Object o) {
 		if (m_writableCount == 0) {
 			return false;
@@ -42,6 +52,7 @@ public class PrivateFixedQueue {
 		return true;
 	}
 
+	@Override
 	public Object dequeue() {
 		if (m_readableCount == 0) {
 			return null;
@@ -55,6 +66,7 @@ public class PrivateFixedQueue {
 		return o;
 	}
 
+	@Override
 	public Object peek() {
 		if (m_readableCount == 0) {
 			return null;

@@ -1,5 +1,6 @@
 package com.thebk.utils.parambag;
 
+import com.thebk.utils.concurrent.LocklessProcessing;
 import io.netty.util.*;
 
 public class CallbackParamBag extends ParamBag<CallbackParamBag> {
@@ -50,7 +51,7 @@ public class CallbackParamBag extends ParamBag<CallbackParamBag> {
 		m_callbackProcessing = callbackProcessing;
 	}
 
-	void locklessCallback() {
+	public void locklessCallback() {
 		m_callback.callback(this);
 	}
 
