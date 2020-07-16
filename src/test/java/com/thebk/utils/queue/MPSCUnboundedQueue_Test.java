@@ -1,6 +1,6 @@
 package com.thebk.utils.queue;
 
-import com.denaliai.fw.utility.concurrent.RCPromise;
+import com.thebk.utils.concurrent.RCPromise;
 import com.thebk.utils.rc.RCBoolean;
 import com.thebk.utils.TestBase;
 import org.junit.jupiter.api.Assertions;
@@ -17,12 +17,12 @@ public class MPSCUnboundedQueue_Test extends TestBase {
 		int value = 1;
 		for(int i = 0; i< InternalMPSCFixedOneShotQueue.QUEUE_SLICE_SIZE; i++) {
 			Assertions.assertTrue(q.enqueue(new Integer(value++), committed));
-			Assertions.assertTrue(committed.value);
+			Assertions.assertTrue(committed.value());
 		}
 		Assertions.assertEquals(1, ((Integer)q.peek()).intValue());
 		for(int i=0; i<InternalMPSCFixedOneShotQueue.QUEUE_SLICE_SIZE/2; i++) {
 			Assertions.assertTrue(q.enqueue(new Integer(value++), committed));
-			Assertions.assertTrue(committed.value);
+			Assertions.assertTrue(committed.value());
 		}
 		Assertions.assertEquals(1, ((Integer)q.peek()).intValue());
 		for(int i=1; i<value; i++) {

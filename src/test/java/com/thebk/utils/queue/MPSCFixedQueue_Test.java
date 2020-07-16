@@ -1,6 +1,6 @@
 package com.thebk.utils.queue;
 
-import com.denaliai.fw.utility.concurrent.RCPromise;
+import com.thebk.utils.concurrent.RCPromise;
 import com.thebk.utils.rc.RCBoolean;
 import com.thebk.utils.TestBase;
 import org.junit.jupiter.api.Assertions;
@@ -14,15 +14,15 @@ public class MPSCFixedQueue_Test extends TestBase {
 		RCBoolean committed = RCBoolean.create(false);
 
 		Assertions.assertTrue(q.enqueue(new Integer(1), committed));
-		Assertions.assertTrue(committed.value);
+		Assertions.assertTrue(committed.value());
 		Assertions.assertEquals(1, ((Integer)q.peek()).intValue());
 
 		Assertions.assertTrue(q.enqueue(new Integer(2), committed));
-		Assertions.assertTrue(committed.value);
+		Assertions.assertTrue(committed.value());
 		Assertions.assertEquals(1, ((Integer)q.peek()).intValue());
 
 		Assertions.assertFalse(q.enqueue(new Integer(3), committed));
-		Assertions.assertFalse(committed.value);
+		Assertions.assertFalse(committed.value());
 
 		Assertions.assertEquals(1, ((Integer)q.dequeue()).intValue());
 		Assertions.assertEquals(2, ((Integer)q.peek()).intValue());
@@ -30,15 +30,15 @@ public class MPSCFixedQueue_Test extends TestBase {
 		Assertions.assertNull(q.peek());
 
 		Assertions.assertTrue(q.enqueue(new Integer(3), committed));
-		Assertions.assertTrue(committed.value);
+		Assertions.assertTrue(committed.value());
 		Assertions.assertEquals(3, ((Integer)q.peek()).intValue());
 
 		Assertions.assertTrue(q.enqueue(new Integer(4), committed));
-		Assertions.assertTrue(committed.value);
+		Assertions.assertTrue(committed.value());
 		Assertions.assertEquals(3, ((Integer)q.peek()).intValue());
 
 		Assertions.assertFalse(q.enqueue(new Integer(5), committed));
-		Assertions.assertFalse(committed.value);
+		Assertions.assertFalse(committed.value());
 
 		Assertions.assertEquals(3, ((Integer)q.dequeue()).intValue());
 		Assertions.assertEquals(4, ((Integer)q.dequeue()).intValue());

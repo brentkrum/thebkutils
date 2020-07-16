@@ -1,8 +1,7 @@
 package com.thebk.utils.queue;
 
-import com.denaliai.fw.utility.concurrent.RCPromise;
 import com.thebk.utils.TestBase;
-import com.thebk.utils.queue.SPSCFixedQueue;
+import com.thebk.utils.concurrent.RCPromise;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
