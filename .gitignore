@@ -42,3 +42,9 @@ target/
 .factorypath
 logs/
 bin/
+
+dependency-reduced-pom.xml
+.flattened-pom.xml
+
+# Output from unit tests
+**/metrics/*.metrics

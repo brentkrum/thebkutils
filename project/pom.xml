@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.thebkutils</groupId>
+		<artifactId>thebk-build</artifactId>
+		<version>${revision}</version>
+	</parent>
 	<groupId>com.thebkutils</groupId>
-	<artifactId>thebk-build</artifactId>
+	<artifactId>thebk-project</artifactId>
 	<version>${revision}</version>
 	<packaging>pom</packaging>
-	<name>TheBKUtils Build</name>
-	<description>TheBKUtils Build</description>
+	<name>TheBKUtils Project</name>
+	<description>TheBKUtils Project</description>
 
 	<properties>
-		<revision>1.0.0</revision>
-		<main.basedir>${basedir}</main.basedir>
-		<flatten-maven-plugin.version>1.1.0</flatten-maven-plugin.version>
+		<main.basedir>${basedir}/..</main.basedir>
 	</properties>
-
-
+  
 	<build>
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>flatten-maven-plugin</artifactId>
-					<version>${flatten-maven-plugin.version}</version>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -63,17 +64,22 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>default</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<modules>
-				<module>project</module>
-			</modules>
-		</profile>
-  </profiles>
+  
+	<modules>
+		<module>thebk-dependencies</module>
+		<module>thebk-parent</module>
+		<module>thebk-core</module>
+		<!-- <module>fw-base-api</module>
+		<module>fw-logging-impl-log4j2</module>
+		<module>fw-logging-impl-jul</module>
+		<module>fw-core</module>
+		<module>fw-core-test</module>
+		<module>fw-json</module>
+		<module>fw-socket</module>
+		<module>fw-mongo</module>
+		<module>fw-http-server</module>
+		<module>fw-http-client</module>
+		<module>fw-starters</module> -->
+	</modules>
 
 </project>
