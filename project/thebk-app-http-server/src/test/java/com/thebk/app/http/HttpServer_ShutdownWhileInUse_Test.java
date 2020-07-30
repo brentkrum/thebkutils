@@ -1,6 +1,7 @@
 package com.thebk.app.http;
 
 import com.thebk.app.Application;
+import com.thebk.utils.concurrent.RCFuture;
 import com.thebk.utils.http.MinimalHTTPRequest;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
@@ -21,7 +22,7 @@ public class HttpServer_ShutdownWhileInUse_Test extends TestBase {
 				responsePromise.setSuccess(response);
 			})
 			.build();
-		Assertions.assertTrue(httpServer.start().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.start().await(1000));
 
 		CountDownLatch requestStartedLatch = new CountDownLatch(1);
 		// Start a request in the background
@@ -33,7 +34,7 @@ public class HttpServer_ShutdownWhileInUse_Test extends TestBase {
 		Assertions.assertTrue(responsePromise.awaitUninterruptibly(1000));
 
 		// Start the server shutdown
-		Future<Void> stopDone = httpServer.stop();
+		RCFuture<Void> stopDone = httpServer.stop();
 
 		// Wait a little bit
 		Thread.sleep(250);
@@ -45,7 +46,7 @@ public class HttpServer_ShutdownWhileInUse_Test extends TestBase {
 		responsePromise.getNow().respondOk(Application.allocator().buffer());
 
 		// The server should now stop
-		Assertions.assertTrue(stopDone.awaitUninterruptibly(1000));
+		Assertions.assertTrue(stopDone.await(1000));
 
 	}
 }

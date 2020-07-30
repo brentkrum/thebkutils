@@ -1,8 +1,8 @@
 package com.thebk.utils.pipe;
 
+import com.thebk.utils.concurrent.DefaultRCPromise;
 import com.thebk.utils.queue.SPSCFixedQueue;
 import com.thebk.utils.concurrent.RCFuture;
-import com.thebk.utils.concurrent.RCPromise;
 import com.thebk.utils.concurrent.RCSucceededFuture;
 
 public class SingleProducerQueue implements ConnectablePipe.IBrokerProducer {
@@ -31,7 +31,7 @@ public class SingleProducerQueue implements ConnectablePipe.IBrokerProducer {
 		m_pipe = pipe;
 
 		// One p ref returned
-		RCPromise<Void> p = RCPromise.create();
+		DefaultRCPromise<Void> p = DefaultRCPromise.create();
 		// one p ref used by cp listener
 		p.retain();
 

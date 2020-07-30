@@ -7,12 +7,12 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.*;
 
-public class RCPromise_Depth2_Test extends TestBase {
+public class DefaultRCPromise_Depth2_Test extends TestBase {
 
 	@BeforeAll
 	public static void init() {
 		// Force a spawn for notify listener
-		System.setProperty("RCPromise.max-notify-depth", "1");
+		System.setProperty("DefaultRCPromise.max-notify-depth", "1");
 	}
 
 
@@ -20,11 +20,11 @@ public class RCPromise_Depth2_Test extends TestBase {
 	public void testDepthAsyncLaunch() throws InterruptedException, TimeoutException {
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-		RCPromise<Void> outerDone = RCPromise.create(executorService);
-		RCPromise<Void> innerDone = RCPromise.create(executorService);
+		DefaultRCPromise<Void> outerDone = DefaultRCPromise.create(executorService);
+		DefaultRCPromise<Void> innerDone = DefaultRCPromise.create(executorService);
 		Thread launchingThread = Thread.currentThread();
 
-		RCPromise<Integer> pInner = RCPromise.create(executorService);
+		DefaultRCPromise<Integer> pInner = DefaultRCPromise.create(executorService);
 		pInner.addListener((f) -> {
 			try {
 				// Inner should have been spawned into separate thread
@@ -37,7 +37,7 @@ public class RCPromise_Depth2_Test extends TestBase {
 				innerDone.setFailure(ex);
 			}
 		});
-		RCPromise<Integer> pOuter = RCPromise.create(executorService);
+		DefaultRCPromise<Integer> pOuter = DefaultRCPromise.create(executorService);
 		pOuter.addListener((f) -> {
 			try {
 				// Outer should run on main thread

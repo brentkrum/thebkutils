@@ -44,7 +44,7 @@ public class HttpClient_ConnectToServer_Test extends AbstractTestBase {
 				response.respondOk(ByteBufUtil.writeAscii(Application.allocator(), "GOOD"));
 			})
 			.build();
-		Assertions.assertTrue(httpServer.start().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.start().await(1000));
 
 		HttpClient client = new HttpClient();
 		Assertions.assertTrue(client.start().awaitUninterruptibly(1000));
@@ -77,7 +77,7 @@ public class HttpClient_ConnectToServer_Test extends AbstractTestBase {
 		}
 
 		Assertions.assertTrue(client.stop().awaitUninterruptibly(1000));
-		Assertions.assertTrue(httpServer.stop().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.stop().await(1000));
 
 		TestUtils.snapshotAndPrintCounters();
 	}

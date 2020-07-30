@@ -2,6 +2,9 @@ package com.thebk.app.http;
 
 import com.thebk.app.Application;
 import com.thebk.utils.concurrent.PerpetualWork;
+import com.thebk.utils.concurrent.RCFuture;
+import com.thebk.utils.concurrent.RCPromise;
+import com.thebk.utils.concurrent.StaticRCPromise;
 import com.thebk.utils.config.Config;
 import com.thebk.utils.metrics.*;
 import io.netty.bootstrap.ServerBootstrap;
@@ -63,8 +66,8 @@ public final class HttpServer {
 
 	private final AtomicInteger m_httpServerRefCount = new AtomicInteger();
 	private final SSLContext m_sslContext;
-	private Promise<Void> m_startDonePromise;
-	private volatile Promise<Void> m_stopDonePromise;
+	private RCPromise<Void> m_startDonePromise;
+	private volatile RCPromise<Void> m_stopDonePromise;
 	private boolean m_isStarted = false;
 	private Channel m_serverConnection;
 	private enum ServerState {Offline, Registering, Binding, BoundListening}
@@ -140,7 +143,7 @@ public final class HttpServer {
 		}
 	}
 
-	public synchronized Future<Void> start() {
+	public synchronized RCFuture<Void> start() {
 		if (m_isStarted) {
 			throw new IllegalStateException("Server already started");
 		}
@@ -150,7 +153,7 @@ public final class HttpServer {
 		serverRetain();
 
 		m_stopDonePromise = null;
-		m_startDonePromise = Application.getTaskPool().next().newPromise();
+		m_startDonePromise = StaticRCPromise.create();
 		m_registerDone.addListener((regDone) -> {
 			if (!regDone.isSuccess()) {
 				LOG.warn("register() of listening socket failed, HttpServer cannot start", regDone.cause());
@@ -175,14 +178,14 @@ public final class HttpServer {
 		return m_startDonePromise;
 	}
 
-	public synchronized Future<Void> stop() {
+	public synchronized RCFuture<Void> stop() {
 		if (m_isStarted == false) {
-			return Application.newSucceededFuture();
+			return StaticRCPromise.createSucceeded(null);
 		}
 		if (m_stopDonePromise != null) {
 			return m_stopDonePromise;
 		}
-		m_stopDonePromise = Application.getTaskPool().next().newPromise();
+		m_stopDonePromise = StaticRCPromise.create();
 		m_stopDonePromise.addListener(f -> {
 			// Set this so start() can be called again
 			m_isStarted = false;

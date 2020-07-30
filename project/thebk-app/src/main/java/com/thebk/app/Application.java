@@ -2,7 +2,7 @@ package com.thebk.app;
 
 import com.thebk.app.utility.concurrent.TheBKEventExecutorGroup;
 import com.thebk.utils.DefaultSystems;
-import com.thebk.utils.concurrent.RCPromise;
+import com.thebk.utils.concurrent.DefaultRCPromise;
 import com.thebk.utils.config.Config;
 import com.thebk.app.logging.LoggingImplRegistration;
 import com.thebk.utils.metrics.CounterMetric;
@@ -154,7 +154,7 @@ public class Application {
 		final Logger LOG = LoggerFactory.getLogger(Application.class);
 		if(m_userShutdownHandler != null) {
 			LOG.info("Waiting on shutdown handler");
-			RCPromise<Void> shutdownDone = RCPromise.create();
+			DefaultRCPromise<Void> shutdownDone = DefaultRCPromise.create();
 			try {
 				m_userShutdownHandler.shutdown(shutdownDone);
 				shutdownDone.await(Long.MAX_VALUE);
@@ -193,7 +193,7 @@ public class Application {
 	}
 
 	public interface IShutdownHandler {
-		void shutdown(RCPromise<Void> shutdownDone);
+		void shutdown(DefaultRCPromise<Void> shutdownDone);
 	}
 
 }

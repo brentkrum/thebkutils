@@ -23,5 +23,9 @@ public interface RCFuture<T> extends ReferenceCounted {
 	boolean isSuccess();
 	boolean isDone();
 	boolean await(long timeoutInMS);
+
 	RCFuture<T> retain();
+	RCFuture<T> retain(int increment);
+	RCFuture<T> touch();
+	RCFuture<T> touch(Object hint);
 }

@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
-public class RCPromise_Simple_Test extends TestBase {
+public class DefaultRCPromise_Simple_Test extends TestBase {
 
 	@Test
 	public void testSimpleSuccessAndFail() {
@@ -16,7 +16,7 @@ public class RCPromise_Simple_Test extends TestBase {
 
 		// Since we are using recycled classes, let's make sure we test a bunch
 		for(int i=0; i<100; i++) {
-			RCPromise<Integer> p = RCPromise.create(executorService);
+			DefaultRCPromise<Integer> p = DefaultRCPromise.create(executorService);
 			Assertions.assertFalse(p.isDone());
 			Assertions.assertFalse(p.isSuccess());
 			p.setSuccess(1);
@@ -25,7 +25,7 @@ public class RCPromise_Simple_Test extends TestBase {
 			Assertions.assertEquals(1, p.get());
 			Assertions.assertTrue(p.release());
 
-			RCPromise<Integer> p2 = RCPromise.create(executorService);
+			DefaultRCPromise<Integer> p2 = DefaultRCPromise.create(executorService);
 			Assertions.assertFalse(p2.isDone());
 			Assertions.assertFalse(p2.isSuccess());
 			p2.setFailure(new RuntimeException());
@@ -41,10 +41,10 @@ public class RCPromise_Simple_Test extends TestBase {
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		Thread launchingThread = Thread.currentThread();
 
-		RCPromise<Integer> done1 = RCPromise.create(executorService);
-		RCPromise<Integer> done2 = RCPromise.create(executorService);
+		DefaultRCPromise<Integer> done1 = DefaultRCPromise.create(executorService);
+		DefaultRCPromise<Integer> done2 = DefaultRCPromise.create(executorService);
 
-		RCPromise<Integer> p = RCPromise.create(executorService);
+		DefaultRCPromise<Integer> p = DefaultRCPromise.create(executorService);
 		p.addListener((f) -> {
 			try {
 				Assertions.assertEquals(launchingThread, Thread.currentThread());
@@ -75,7 +75,7 @@ public class RCPromise_Simple_Test extends TestBase {
 		Assertions.assertEquals(1, p.refCnt());
 
 		// Test post-completion listener
-		RCPromise<Integer> done3 = RCPromise.create(executorService);
+		DefaultRCPromise<Integer> done3 = DefaultRCPromise.create(executorService);
 		p.addListener((f) -> {
 			try {
 				Assertions.assertEquals(launchingThread, Thread.currentThread());

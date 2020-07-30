@@ -39,13 +39,13 @@ public class ConnectablePipe {
 	private <H, I> RCFuture<H> sendToProcessor(int msg, I iface) {
 		RCBoolean comitted = RCBoolean.create(false);
 		try {
-			RCPromise<H> p = RCPromise.create();
+			DefaultRCPromise<H> p = DefaultRCPromise.create();
 			// Pass one ref into bag
 			ParamDataBag bag = ParamDataBag.create().po(iface).po(p.retain()).pi(msg);
 			if (!m_commandQueue.enqueue(bag, comitted)) {
 				// Release the create() ref
 				p.release();
-				// Release the bag (and the RCPromise ref inside it)
+				// Release the bag (and the DefaultRCPromise ref inside it)
 				bag.release();
 				return RCFailedFuture.create(new IllegalStateException("Command queue full"));
 			}
@@ -117,7 +117,7 @@ public class ConnectablePipe {
 		}
 	}
 
-	private final <T> void setFailure(RCPromise<T> p, Throwable cause) {
+	private final <T> void setFailure(DefaultRCPromise<T> p, Throwable cause) {
 		try {
 			p.setFailure(cause);
 		} catch(Throwable t) {
@@ -127,7 +127,7 @@ public class ConnectablePipe {
 		}
 	}
 
-	private final <T> void setSuccess(RCPromise<T> p, T result) {
+	private final <T> void setSuccess(DefaultRCPromise<T> p, T result) {
 		try {
 			p.setSuccess(result);
 		} catch(Throwable t) {
@@ -143,7 +143,7 @@ public class ConnectablePipe {
 
 		private void processBag0(ParamBag bag) {
 			final int cmd = bag.pi();
-			final RCPromise<Object> commandDone = (RCPromise<Object>)bag.po();
+			final DefaultRCPromise<Object> commandDone = (DefaultRCPromise<Object>)bag.po();
 			switch(cmd) {
 				case CONSUMER_CONNECT:
 					if (m_consumer != null) {

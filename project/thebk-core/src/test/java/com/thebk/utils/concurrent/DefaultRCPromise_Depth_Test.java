@@ -9,23 +9,23 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
-public class RCPromise_Depth_Test extends TestBase {
+public class DefaultRCPromise_Depth_Test extends TestBase {
 
 	@BeforeAll
 	public static void init() {
 		// Force a spawn for notify listener
-		System.setProperty("RCPromise.max-notify-depth", "0");
+		System.setProperty("DefaultRCPromise.max-notify-depth", "0");
 	}
 
 	@Test
 	public void testDepthAsyncLaunch() throws TimeoutException {
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-		RCPromise<Void> done1 = RCPromise.create(executorService);
-		RCPromise<Void> done2 = RCPromise.create(executorService);
+		DefaultRCPromise<Void> done1 = DefaultRCPromise.create(executorService);
+		DefaultRCPromise<Void> done2 = DefaultRCPromise.create(executorService);
 		Thread launchingThread = Thread.currentThread();
 
-		RCPromise<Integer> p = RCPromise.create(executorService);
+		DefaultRCPromise<Integer> p = DefaultRCPromise.create(executorService);
 		p.addListener((f) -> {
 			try {
 				Assertions.assertNotEquals(launchingThread, Thread.currentThread());

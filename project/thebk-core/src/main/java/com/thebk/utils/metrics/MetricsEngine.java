@@ -3,15 +3,13 @@ package com.thebk.utils.metrics;
 import com.thebk.utils.DefaultSystems;
 import com.thebk.utils.concurrent.PerpetualWork;
 import com.thebk.utils.concurrent.RCFuture;
-import com.thebk.utils.concurrent.RCPromise;
+import com.thebk.utils.concurrent.DefaultRCPromise;
 import com.thebk.utils.concurrent.RCSucceededFuture;
 import com.thebk.utils.config.Config;
 import com.thebk.utils.netty.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.Recycler;
 import io.netty.util.concurrent.FastThreadLocal;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.ScheduledFuture;
 import io.netty.util.internal.PlatformDependent;
 import org.slf4j.LoggerFactory;
@@ -87,7 +85,7 @@ public final class MetricsEngine {
 		m_worker.requestMoreWork();
 	}
 
-	private static RCPromise<Void> m_snapshotStopFuture;
+	private static DefaultRCPromise<Void> m_snapshotStopFuture;
 	private static AtomicInteger m_timedSnapshotRefCount = new AtomicInteger();
 	private static volatile boolean m_timedSnapshotStop;
 	private static ScheduledFuture<?> m_timedSnapshot;
@@ -99,7 +97,7 @@ public final class MetricsEngine {
 		}
 		// One ref for start/stop
 		retainTimedSnapshotRef();
-		m_snapshotStopFuture = RCPromise.create();
+		m_snapshotStopFuture = DefaultRCPromise.create();
 		// One ref will be used on every run of SnapshotFileWriter()
 		m_timedSnapshot = DefaultSystems.taskExecutor().scheduleAtFixedRate(new SnapshotTimer(), snapshotDurationInMS, snapshotDurationInMS, TimeUnit.MILLISECONDS);
 	}

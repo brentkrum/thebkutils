@@ -21,7 +21,7 @@ public class RCSucceededFuture_Test extends TestBase {
 		Assertions.assertTrue(p2.isSuccess());
 		Assertions.assertEquals(2, p2.get());
 
-		RCPromise<Void> done1 = RCPromise.create();
+		DefaultRCPromise<Void> done1 = DefaultRCPromise.create();
 		p2.addListener((f) -> {
 			try {
 				Assertions.assertTrue(f.isDone());

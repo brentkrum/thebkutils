@@ -1,7 +1,7 @@
 package com.thebk.utils.metrics;
 
 import com.thebk.utils.TestBase;
-import com.thebk.utils.concurrent.RCPromise;
+import com.thebk.utils.concurrent.DefaultRCPromise;
 import com.thebk.utils.rc.RCInteger;
 import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Assertions;
@@ -63,10 +63,10 @@ public class Metrics_Load_Test extends TestBase {
 	private static final class WorkerThread extends Thread {
 		private static final CounterAndRateMetric m_threadCounter = MetricsEngine.newCounterAndRateMetric("counter");
 		private static final DurationRateMetric m_threadDuration = MetricsEngine.newRateMetric("rate");
-		final RCPromise<Void> promise;
+		final DefaultRCPromise<Void> promise;
 
 		WorkerThread() {
-			this.promise = RCPromise.create();
+			this.promise = DefaultRCPromise.create();
 		}
 
 		@Override

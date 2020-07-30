@@ -39,5 +39,5 @@ public class HttpServer_Bind_Test extends TestBase {
 		});
 		Assertions.assertTrue(bindFailedLatch.await(1, TimeUnit.SECONDS));
 
-		Assertions.assertTrue(boundHttpServer.stop().awaitUninterruptibly(1000));
+		Assertions.assertTrue(boundHttpServer.stop().await(1000));
 	}}

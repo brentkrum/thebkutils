@@ -129,7 +129,15 @@ public class RCFailedFuture<T> extends AbstractReferenceCounted implements RCFut
 	}
 
 	@Override
-	public ReferenceCounted touch(Object hint) {
+	public RCFuture<T> touch() {
+		if (m_leakTracker != null) {
+			m_leakTracker.record();
+		}
+		return this;
+	}
+
+	@Override
+	public RCFuture<T> touch(Object hint) {
 		if (m_leakTracker != null) {
 			m_leakTracker.record(hint);
 		}
@@ -137,8 +145,14 @@ public class RCFailedFuture<T> extends AbstractReferenceCounted implements RCFut
 	}
 
 	@Override
-	public RCFailedFuture<T> retain() {
+	public RCFuture<T> retain() {
 		super.retain();
+		return this;
+	}
+
+	@Override
+	public RCFuture<T> retain(int increment) {
+		super.retain(increment);
 		return this;
 	}
 

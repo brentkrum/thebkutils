@@ -17,7 +17,7 @@ public class HttpServer_IO_Test extends TestBase {
 			.listenPort(10000)
 			.build();
 		CountDownLatch latch = new CountDownLatch(1);
-		Assertions.assertTrue(httpServer.start().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.start().await(1000));
 
 		String responseData = MinimalHTTPRequest.get("localhost", 10000, "/nothing_to_get.html");
 		Assertions.assertEquals("", responseData);
@@ -38,7 +38,7 @@ public class HttpServer_IO_Test extends TestBase {
 		Assertions.assertTrue(onDisconnect, "Did not find onDisconnect");
 		Assertions.assertTrue(onRequest, "Did not find onRequest");
 
-		Assertions.assertTrue(httpServer.stop().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.stop().await(1000));
 	}
 
 	@Test
@@ -58,11 +58,11 @@ public class HttpServer_IO_Test extends TestBase {
 				response.respondOk(ByteBufUtil.writeAscii(Application.allocator(), "GOOD"));
 			})
 			.build();
-		Assertions.assertTrue(httpServer.start().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.start().await(1000));
 
 		String responseData = MinimalHTTPRequest.get("localhost", 10000, "/nothing_to_get.html");
 		Assertions.assertEquals("GOOD", responseData);
 
-		Assertions.assertTrue(httpServer.stop().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.stop().await(1000));
 	}
 }

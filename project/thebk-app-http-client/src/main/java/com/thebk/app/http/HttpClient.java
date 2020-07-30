@@ -56,14 +56,18 @@ public class HttpClient {
 	}
 
 	public Future<Void> start() {
-		m_requestStart = true;
-		m_worker.requestMoreWork();
+		if (!m_requestStart) {
+			m_requestStart = true;
+			m_worker.requestMoreWork();
+		}
 		return m_startPromise;
 	}
 
 	public Future<Void> stop() {
-		m_requestStop = true;
-		m_worker.requestMoreWork();
+		if (!m_requestStop) {
+			m_requestStop = true;
+			m_worker.requestMoreWork();
+		}
 		return m_stopPromise;
 	}
 

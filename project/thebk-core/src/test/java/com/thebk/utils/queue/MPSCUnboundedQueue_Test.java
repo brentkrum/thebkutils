@@ -1,6 +1,6 @@
 package com.thebk.utils.queue;
 
-import com.thebk.utils.concurrent.RCPromise;
+import com.thebk.utils.concurrent.DefaultRCPromise;
 import com.thebk.utils.rc.RCBoolean;
 import com.thebk.utils.TestBase;
 import org.junit.jupiter.api.Assertions;
@@ -56,7 +56,7 @@ public class MPSCUnboundedQueue_Test extends TestBase {
 	}
 
 	private static final class Producer extends Thread {
-		private final RCPromise<Void> m_done = RCPromise.create();
+		private final DefaultRCPromise<Void> m_done = DefaultRCPromise.create();
 		private final MPSCUnboundedQueue m_q;
 		private final int m_index;
 
@@ -87,7 +87,7 @@ public class MPSCUnboundedQueue_Test extends TestBase {
 	}
 
 	private static final class Consumer extends Thread {
-		private final RCPromise<Void> m_done = RCPromise.create();
+		private final DefaultRCPromise<Void> m_done = DefaultRCPromise.create();
 		private final MPSCUnboundedQueue m_q;
 		private int[] m_numDequeued;
 		private int m_numDone;

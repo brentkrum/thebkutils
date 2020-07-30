@@ -36,11 +36,11 @@ public class HttpServer_SSL_Test extends TestBase {
 				response.respondOk(ByteBufUtil.writeAscii(Application.allocator(), "GOOD"));
 			})
 			.build();
-		Assertions.assertTrue(httpServer.start().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.start().await(1000));
 
 		String responseData = MinimalHTTPSRequest.get("localhost", 10000, "/nothing_to_get.html");
 		Assertions.assertEquals("GOOD", responseData);
 
-		Assertions.assertTrue(httpServer.stop().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.stop().await(1000));
 	}
 }

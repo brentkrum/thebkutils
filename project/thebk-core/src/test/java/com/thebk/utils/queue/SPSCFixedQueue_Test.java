@@ -1,7 +1,7 @@
 package com.thebk.utils.queue;
 
 import com.thebk.utils.TestBase;
-import com.thebk.utils.concurrent.RCPromise;
+import com.thebk.utils.concurrent.DefaultRCPromise;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +48,7 @@ public class SPSCFixedQueue_Test extends TestBase {
 	}
 
 	private static final class Producer extends Thread {
-		private final RCPromise<Void> m_done = RCPromise.create();
+		private final DefaultRCPromise<Void> m_done = DefaultRCPromise.create();
 		private final SPSCFixedQueue m_q;
 
 		Producer(SPSCFixedQueue q) {
@@ -67,7 +67,7 @@ public class SPSCFixedQueue_Test extends TestBase {
 
 		private void _run() {
 			for(int i=0; i<20000; i++) {
-				RCPromise<Void> p = RCPromise.create();
+				DefaultRCPromise<Void> p = DefaultRCPromise.create();
 				Assertions.assertEquals(1, p.refCnt());
 				if (!m_q.enqueue(p.retain())) {
 					throw new RuntimeException("Should not happen");
@@ -81,7 +81,7 @@ public class SPSCFixedQueue_Test extends TestBase {
 	}
 
 	private static final class Consumer extends Thread {
-		private final RCPromise<Void> m_done = RCPromise.create();
+		private final DefaultRCPromise<Void> m_done = DefaultRCPromise.create();
 		private final SPSCFixedQueue m_q;
 		private volatile boolean m_shutdown;
 
@@ -105,7 +105,7 @@ public class SPSCFixedQueue_Test extends TestBase {
 
 		private void _run() {
 			while(!m_shutdown) {
-				RCPromise<Void> p = (RCPromise<Void>)m_q.dequeue();
+				DefaultRCPromise<Void> p = (DefaultRCPromise<Void>)m_q.dequeue();
 				if (p != null) {
 					p.setSuccess(null);
 					p.release();
