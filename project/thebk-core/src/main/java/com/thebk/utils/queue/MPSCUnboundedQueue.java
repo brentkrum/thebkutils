@@ -4,20 +4,20 @@ import com.thebk.utils.concurrent.LinkedTSNonBlockingRefCounter;
 import com.thebk.utils.rc.RCBoolean;
 
 public class MPSCUnboundedQueue implements TheBKQueue {
-	private volatile LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> m_currentWrite = null;
+	private volatile LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> m_currentWrite = null;
 
 	public MPSCUnboundedQueue() {
-		m_currentWrite = new LinkedTSNonBlockingRefCounter<>(InternalMPSCFixedOneShotQueue.create());
+		m_currentWrite = new LinkedTSNonBlockingRefCounter<>(MPSCUnboundedQueueSlice.create());
 	}
 
 	@Override
 	public boolean enqueue(Object o, RCBoolean committed) {
 		while(true) {
 			// m_currentWrite is never null
-			LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> currentWrite = m_currentWrite;
-			LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> lastWrite = null;
+			LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> currentWrite = m_currentWrite;
+			LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> lastWrite = null;
 			while (currentWrite != null) {
-				InternalMPSCFixedOneShotQueue queue = currentWrite.checkout();
+				MPSCUnboundedQueueSlice queue = currentWrite.checkout();
 				if (queue != null) {
 					if (!queue.isWriteFull() && queue.enqueue(o, committed)) {
 						currentWrite.checkin();
@@ -29,12 +29,12 @@ public class MPSCUnboundedQueue implements TheBKQueue {
 				currentWrite = lastWrite.next();
 			}
 			// If we are here, then lastWrite.next() returned null
-			final LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> newWrite = new LinkedTSNonBlockingRefCounter<>(InternalMPSCFixedOneShotQueue.create());
+			final LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> newWrite = new LinkedTSNonBlockingRefCounter<>(MPSCUnboundedQueueSlice.create());
 			// In the above loop, lastWrite was set to the last link in the chain at the time
-			LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> cw = lastWrite;
+			LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> cw = lastWrite;
 			// Find the last link in the chain and add our new queue
 			while(true) {
-				final LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> next = cw.next();
+				final LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> next = cw.next();
 				if (next == null && cw.setNext(newWrite)) {
 					break;
 				}
@@ -45,18 +45,24 @@ public class MPSCUnboundedQueue implements TheBKQueue {
 
 	@Override
 	public boolean enqueue(Object o) {
+		RCBoolean committed = RCBoolean.create(false);
+		if (enqueue(o, committed)) {
+			committed.release();
+			return true;
+		}
+		committed.release();
 		return false;
 	}
 
 	@Override
 	public Object dequeue() {
 		while (true) {
-			LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> currentWrite = m_currentWrite;
-			InternalMPSCFixedOneShotQueue queue = currentWrite.checkout();
+			LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> currentWrite = m_currentWrite;
+			MPSCUnboundedQueueSlice queue = currentWrite.checkout();
 			if (queue.isReadUsedUp()) {
 				currentWrite.checkin();
 
-				LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> nextWrite = currentWrite.next();
+				LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> nextWrite = currentWrite.next();
 				if (nextWrite == null) {
 					// The currentWrite pos is the last link in the chain
 					return null;
@@ -77,12 +83,12 @@ public class MPSCUnboundedQueue implements TheBKQueue {
 	@Override
 	public Object peek() {
 		while (true) {
-			LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> currentWrite = m_currentWrite;
-			InternalMPSCFixedOneShotQueue queue = currentWrite.checkout();
+			LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> currentWrite = m_currentWrite;
+			MPSCUnboundedQueueSlice queue = currentWrite.checkout();
 			if (queue.isReadUsedUp()) {
 				currentWrite.checkin();
 
-				LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> nextWrite = currentWrite.next();
+				LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> nextWrite = currentWrite.next();
 				if (nextWrite == null) {
 					// The currentWrite pos is the last link in the chain
 					return null;
@@ -106,29 +112,18 @@ public class MPSCUnboundedQueue implements TheBKQueue {
 	}
 
 	@Override
-	public boolean isEmpty() {
-		while (true) {
-			LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> currentWrite = m_currentWrite;
-			InternalMPSCFixedOneShotQueue queue = currentWrite.checkout();
-			if (queue.isReadUsedUp()) {
+	public int size() {
+		LinkedTSNonBlockingRefCounter<MPSCUnboundedQueueSlice> currentWrite = m_currentWrite;
+		int size = 0;
+		while (currentWrite != null) {
+			MPSCUnboundedQueueSlice queue = currentWrite.checkout();
+			if (queue != null) {
+				size += queue.size();
 				currentWrite.checkin();
-
-				LinkedTSNonBlockingRefCounter<InternalMPSCFixedOneShotQueue> nextWrite = currentWrite.next();
-				if (nextWrite == null) {
-					// The currentWrite pos is the last link in the chain
-					return true;
-				}
-				currentWrite.clear();
-
-				// Update start of chain to the next link
-				m_currentWrite = nextWrite;
-				continue;
 			}
-			// This could return null if things have not been committed yet, but that is ok
-			final boolean empty = (queue.peek() != null);
-			currentWrite.checkin();
-			return empty;
+			currentWrite = currentWrite.next();
 		}
+		return size;
 	}
 
 	/**

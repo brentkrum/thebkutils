@@ -15,12 +15,12 @@ public class MPSCUnboundedQueue_Test extends TestBase {
 		RCBoolean committed = RCBoolean.create(false);
 
 		int value = 1;
-		for(int i = 0; i< InternalMPSCFixedOneShotQueue.QUEUE_SLICE_SIZE; i++) {
+		for(int i = 0; i< MPSCUnboundedQueueSlice.QUEUE_SLICE_SIZE; i++) {
 			Assertions.assertTrue(q.enqueue(new Integer(value++), committed));
 			Assertions.assertTrue(committed.value());
 		}
 		Assertions.assertEquals(1, ((Integer)q.peek()).intValue());
-		for(int i=0; i<InternalMPSCFixedOneShotQueue.QUEUE_SLICE_SIZE/2; i++) {
+		for(int i = 0; i< MPSCUnboundedQueueSlice.QUEUE_SLICE_SIZE/2; i++) {
 			Assertions.assertTrue(q.enqueue(new Integer(value++), committed));
 			Assertions.assertTrue(committed.value());
 		}

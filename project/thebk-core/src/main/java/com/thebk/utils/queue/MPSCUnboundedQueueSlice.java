@@ -1,36 +1,35 @@
 package com.thebk.utils.queue;
 
+import com.thebk.utils.config.Config;
 import com.thebk.utils.rc.RCBoolean;
 import io.netty.util.*;
 
 import java.util.concurrent.atomic.*;
 
-class InternalMPSCFixedOneShotQueue extends AbstractReferenceCounted {
-	static final int QUEUE_SLICE_SIZE = 4096;
-	private static final ResourceLeakDetector<InternalMPSCFixedOneShotQueue> LEAK_DETECT = ResourceLeakDetectorFactory.instance().newResourceLeakDetector(InternalMPSCFixedOneShotQueue.class, 1);
-	private static final Recycler<InternalMPSCFixedOneShotQueue> RECYCLER = new Recycler<InternalMPSCFixedOneShotQueue>() {
+class MPSCUnboundedQueueSlice extends AbstractReferenceCounted {
+	static final int QUEUE_SLICE_SIZE = Config.getInt("com.thebk.utils.queue.MPSCUnboundedQueueSlice", 128);
+	private static final ResourceLeakDetector<MPSCUnboundedQueueSlice> LEAK_DETECT = ResourceLeakDetectorFactory.instance().newResourceLeakDetector(MPSCUnboundedQueueSlice.class, 1);
+	private static final Recycler<MPSCUnboundedQueueSlice> RECYCLER = new Recycler<MPSCUnboundedQueueSlice>() {
 		@Override
-		protected InternalMPSCFixedOneShotQueue newObject(Recycler.Handle<InternalMPSCFixedOneShotQueue> handle) {
-			return new InternalMPSCFixedOneShotQueue(handle);
+		protected MPSCUnboundedQueueSlice newObject(Recycler.Handle<MPSCUnboundedQueueSlice> handle) {
+			return new MPSCUnboundedQueueSlice(handle);
 		}
 	};
-	private static final AtomicLongFieldUpdater<InternalMPSCFixedOneShotQueue> m_writeableIndexUpdater = AtomicLongFieldUpdater.newUpdater(InternalMPSCFixedOneShotQueue.class, "m_writeableIndex");
-	private static final AtomicLongFieldUpdater<InternalMPSCFixedOneShotQueue> m_readableCountUpdater = AtomicLongFieldUpdater.newUpdater(InternalMPSCFixedOneShotQueue.class, "m_readableCount");
-	private static final AtomicReferenceFieldUpdater<InternalMPSCFixedOneShotQueue, InternalMPSCFixedOneShotQueue> m_nextUpdate = AtomicReferenceFieldUpdater.newUpdater(InternalMPSCFixedOneShotQueue.class, InternalMPSCFixedOneShotQueue.class, "m_next");
+	private static final AtomicLongFieldUpdater<MPSCUnboundedQueueSlice> m_writeableIndexUpdater = AtomicLongFieldUpdater.newUpdater(MPSCUnboundedQueueSlice.class, "m_writeableIndex");
+	private static final AtomicLongFieldUpdater<MPSCUnboundedQueueSlice> m_readableCountUpdater = AtomicLongFieldUpdater.newUpdater(MPSCUnboundedQueueSlice.class, "m_readableCount");
 
 	private static final int m_maxQueueSize = QUEUE_SLICE_SIZE;
 
-	private final Recycler.Handle<InternalMPSCFixedOneShotQueue> m_handle;
+	private final Recycler.Handle<MPSCUnboundedQueueSlice> m_handle;
 	private final AtomicLong m_status[]; // 0 - unset, 1-done, 2-comitted
 	private final Object m_values[];
 
-	private ResourceLeakTracker<InternalMPSCFixedOneShotQueue> m_leakTracker;
+	private ResourceLeakTracker<MPSCUnboundedQueueSlice> m_leakTracker;
 	private long m_readableIndex;
 	private volatile long m_writeableIndex;
 	private volatile long m_readableCount;
-	private volatile InternalMPSCFixedOneShotQueue m_next;
 
-	public InternalMPSCFixedOneShotQueue(Recycler.Handle<InternalMPSCFixedOneShotQueue> handle) {
+	public MPSCUnboundedQueueSlice(Recycler.Handle<MPSCUnboundedQueueSlice> handle) {
 		m_handle = handle;
 		m_status = new AtomicLong[m_maxQueueSize];
 		for(int i=0; i<m_maxQueueSize; i++) {
@@ -44,14 +43,18 @@ class InternalMPSCFixedOneShotQueue extends AbstractReferenceCounted {
 		m_leakTracker = LEAK_DETECT.track(this);
 	}
 
-	public static InternalMPSCFixedOneShotQueue create() {
-		InternalMPSCFixedOneShotQueue ref = RECYCLER.get();
+	public static MPSCUnboundedQueueSlice create() {
+		MPSCUnboundedQueueSlice ref = RECYCLER.get();
 		ref.init();
 		return ref;
 	}
 
 	public boolean isWriteFull() {
 		return (m_writeableIndex >= m_maxQueueSize);
+	}
+
+	public int size() {
+		return (int)m_readableCount;
 	}
 
 	public boolean enqueue(Object o, RCBoolean committed) {
@@ -118,7 +121,8 @@ class InternalMPSCFixedOneShotQueue extends AbstractReferenceCounted {
 	}
 
 	public Object dequeue() {
-		if (m_readableCount == 0 || m_readableIndex >= m_maxQueueSize) {
+		//if (m_readableCount == 0 || m_readableIndex >= m_maxQueueSize) {
+		if (m_readableCount == 0) {
 			return null;
 		}
 		m_readableCountUpdater.decrementAndGet(this);
@@ -138,7 +142,8 @@ class InternalMPSCFixedOneShotQueue extends AbstractReferenceCounted {
 	}
 
 	public Object peek() {
-		if (m_readableCount == 0 || m_readableIndex >= m_maxQueueSize) {
+		//if (m_readableCount == 0 || m_readableIndex >= m_maxQueueSize) {
+		if (m_readableCount == 0) {
 			return null;
 		}
 		int index = (int)m_readableIndex;
@@ -156,7 +161,6 @@ class InternalMPSCFixedOneShotQueue extends AbstractReferenceCounted {
 		m_readableIndex = 0;
 		m_writeableIndex = 0;
 		m_readableCount = 0;
-		m_next = null;
 
 		m_leakTracker.close(this);
 		setRefCnt(1);
@@ -164,7 +168,7 @@ class InternalMPSCFixedOneShotQueue extends AbstractReferenceCounted {
 	}
 
 	@Override
-	public InternalMPSCFixedOneShotQueue touch(Object hint) {
+	public MPSCUnboundedQueueSlice touch(Object hint) {
 		m_leakTracker.record(hint);
 		return this;
 	}

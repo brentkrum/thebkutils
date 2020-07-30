@@ -2,6 +2,7 @@ package com.thebk.utils;
 
 import com.thebk.utils.config.Config;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -17,7 +18,7 @@ public class TestBase {
 		System.setProperty("log4j2.disableJmx", "true");
 		System.setProperty("log4j.configurationFile", "test-log4j2.xml");
 
-		DefaultSystems.setDefaultTaskExecutor(Executors.newFixedThreadPool(2));
+		DefaultSystems.setDefaultTaskExecutor(new DefaultEventExecutorGroup(2));
 		DefaultSystems.setDefaultByteBufAllocator(PooledByteBufAllocator.DEFAULT);
 		Config.init();
 	}

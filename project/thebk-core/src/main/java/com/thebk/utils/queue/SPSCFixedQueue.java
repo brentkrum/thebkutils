@@ -15,6 +15,7 @@ public class SPSCFixedQueue implements TheBKQueue {
 	private volatile long m_readableCount = 0;
 	private long m_readableIndex;
 	private long m_writeableIndex;
+	volatile SPSCFixedQueue next; // Used by SPSCUnboundedQueue
 
 	public SPSCFixedQueue(int maxQueueSize) {
 		if (maxQueueSize < 1) {
@@ -73,8 +74,8 @@ public class SPSCFixedQueue implements TheBKQueue {
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return (m_readableCount == 0);
+	public int size() {
+		return (int)m_readableCount;
 	}
 
 }

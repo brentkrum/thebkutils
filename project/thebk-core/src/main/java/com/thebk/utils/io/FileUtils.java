@@ -1,8 +1,13 @@
 package com.thebk.utils.io;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+
 import java.io.*;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardOpenOption;
 
 public class FileUtils {
 
@@ -26,6 +31,26 @@ public class FileUtils {
 			r.close();
 		}
 		return b.toString();
+	}
+
+	public static final ByteBuf readFileBB(File file, ByteBufAllocator allocator) throws IOException {
+		final ByteBuf data = allocator.buffer();
+		FileChannel channel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
+		try {
+			data.writeBytes(channel, 0l, (int)channel.size());
+		} finally {
+			channel.close();
+		}
+		return data;
+	}
+
+	public static final void appendFile(String fileName, String fileContents) throws IOException {
+		final FileWriter out = new FileWriter(fileName, true);
+		try {
+			out.write(fileContents);
+		} finally {
+			out.close();
+		}
 	}
 
 	public static final void writeFile(String fileName, String fileContents) throws IOException {
@@ -68,4 +93,19 @@ public class FileUtils {
 		}
 		return b.toString();
 
-	}}
+	}
+
+	public static final void deleteDir(File dir) {
+		for(File f : dir.listFiles()) {
+			if (f.isDirectory()) {
+				deleteDir(f);
+			}
+			if (!f.delete()) {
+				throw new RuntimeException("Could not delete " + f.getAbsolutePath());
+			}
+		}
+		if (!dir.delete()) {
+			throw new RuntimeException("Could not delete " + dir.getAbsolutePath());
+		}
+	}
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.thebkutils</groupId>
+		<artifactId>thebk-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../thebk-parent</relativePath>
+	</parent>
+	<artifactId>thebk-app-starters</artifactId>
+	<packaging>pom</packaging>
+	<name>TheBKUtils Application Starters</name>
+	<description>TheBKUtils Application Starters</description>
+	<properties>
+		<main.basedir>${basedir}/..</main.basedir>
+	</properties>
+	<modules>
+		<module>thebk-starter-parent</module>
+		
+		<module>thebk-starter-service-parent</module>
+		<module>thebk-starter-loose-parent</module>
+		
+		<module>thebk-starter-service</module>
+		<module>thebk-starter-loose</module>
+	</modules>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.basepom.maven</groupId>
+				<artifactId>duplicate-finder-maven-plugin</artifactId>
+				<version>1.4.0</version>
+				<executions>
+					<execution>
+						<id>duplicate-dependencies</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<failBuildInCaseOfConflict>true</failBuildInCaseOfConflict>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

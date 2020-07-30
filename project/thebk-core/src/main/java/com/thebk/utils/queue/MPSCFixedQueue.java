@@ -5,7 +5,7 @@ import com.thebk.utils.rc.RCBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
-public class MPSCFixedQueue {
+public class MPSCFixedQueue implements TheBKQueue {
 	private static final AtomicLongFieldUpdater<MPSCFixedQueue> m_writeableIndexUpdater = AtomicLongFieldUpdater.newUpdater(MPSCFixedQueue.class, "m_writeableIndex");
 	private static final AtomicLongFieldUpdater<MPSCFixedQueue> m_readableCountUpdater = AtomicLongFieldUpdater.newUpdater(MPSCFixedQueue.class, "m_readableCount");
 	private static final AtomicLongFieldUpdater<MPSCFixedQueue> m_writableCountUpdater = AtomicLongFieldUpdater.newUpdater(MPSCFixedQueue.class, "m_writableCount");
@@ -33,7 +33,7 @@ public class MPSCFixedQueue {
 	}
 
 
-
+	@Override
 	public boolean enqueue(Object o, RCBoolean committed) {
 		long w = m_writableCountUpdater.decrementAndGet(this);
 		if (w < 0) {
@@ -98,6 +98,7 @@ public class MPSCFixedQueue {
 		// This should never happen, we did not hand off the commit token
 	}
 
+	@Override
 	public Object dequeue() {
 		if (m_readableCount == 0) {
 			return null;
@@ -115,11 +116,32 @@ public class MPSCFixedQueue {
 		return o;
 	}
 
+	@Override
 	public Object peek() {
 		if (m_readableCount == 0) {
 			return null;
 		}
 		int index = (int)(m_readableIndex % m_maxQueueSize);
 		return m_values[index];
+	}
+
+	@Override
+	public boolean enqueue(Object o) {
+		RCBoolean committed = RCBoolean.create(false);
+		try {
+			return enqueue(o, committed);
+		} finally {
+			committed.release();
+		}
+	}
+
+	@Override
+	public boolean isFull() {
+		return (m_writableCount <= 0);
+	}
+
+	@Override
+	public int size() {
+		return (int)m_readableCount;
 	}
 }

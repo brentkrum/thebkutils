@@ -8,5 +8,5 @@ public interface TheBKQueue {
     Object dequeue();
     Object peek();
     boolean isFull();
-    boolean isEmpty();
+    int size();
 }

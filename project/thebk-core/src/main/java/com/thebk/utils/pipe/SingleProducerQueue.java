@@ -5,13 +5,13 @@ import com.thebk.utils.concurrent.RCFuture;
 import com.thebk.utils.concurrent.RCPromise;
 import com.thebk.utils.concurrent.RCSucceededFuture;
 
-public class SingleProducerQueue implements Pipe.IBrokerProducer {
+public class SingleProducerQueue implements ConnectablePipe.IBrokerProducer {
 	private final SPSCFixedQueue m_inQueue;
 	private final Runnable m_onQueueNotFullCallback;
 	private boolean m_notifyVsRunProcessor = true;
-	private Pipe m_pipe;
+	private ConnectablePipe m_pipe;
 	private volatile boolean m_queueFull;
-	private Pipe.IProducerHandle m_handle;
+	private ConnectablePipe.IProducerHandle m_handle;
 
 	public SingleProducerQueue(Runnable onQueueNotFullCallback) {
 		this(128, onQueueNotFullCallback);
@@ -26,7 +26,7 @@ public class SingleProducerQueue implements Pipe.IBrokerProducer {
 		m_notifyVsRunProcessor = notifyVsRunProcessor;
 	}
 
-	public RCFuture<Void> open(Pipe pipe) {
+	public RCFuture<Void> open(ConnectablePipe pipe) {
 		m_queueFull = false;
 		m_pipe = pipe;
 
@@ -36,7 +36,7 @@ public class SingleProducerQueue implements Pipe.IBrokerProducer {
 		p.retain();
 
 		// We are returned one ref to cp
-		RCFuture<Pipe.IProducerHandle> cp = pipe.connectProducer(this);
+		RCFuture<ConnectablePipe.IProducerHandle> cp = pipe.connectProducer(this);
 		// Listener holds a ref to cp
 		cp.addListener((f) -> {
 			try {
@@ -58,7 +58,7 @@ public class SingleProducerQueue implements Pipe.IBrokerProducer {
 	public RCFuture<Void> close() {
 		m_pipe = null;
 		if (m_handle != null) {
-			final Pipe.IProducerHandle handle = m_handle;
+			final ConnectablePipe.IProducerHandle handle = m_handle;
 			m_handle = null;
 			return handle.disconnect();
 		}

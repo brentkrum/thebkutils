@@ -4,8 +4,6 @@ import com.thebk.utils.rc.RCBoolean;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
 
-import java.util.Arrays;
-
 public class PrivateFixedQueue implements TheBKQueue {
 	private final Object m_values[];
 	private final int m_maxQueueSize;
@@ -29,8 +27,8 @@ public class PrivateFixedQueue implements TheBKQueue {
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return (m_readableCount == 0);
+	public int size() {
+		return (int)m_readableCount;
 	}
 
 	@Override
@@ -76,7 +74,7 @@ public class PrivateFixedQueue implements TheBKQueue {
 	}
 
 	public void clear() {
-		while(!isEmpty()) {
+		while(m_readableCount > 0) {
 			Object o = dequeue();
 			if (o instanceof ReferenceCounted) {
 				ReferenceCountUtil.safeRelease(o);

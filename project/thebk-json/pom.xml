@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.thebkutils</groupId>
+		<artifactId>thebk-core-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../thebk-core-parent</relativePath>
+	</parent>
+	<artifactId>thebk-json</artifactId>
+	<name>TheBKUtils JSON Processing</name>
+	<description>TheBKUtils JSON Processing</description>
+
+	<properties>
+		<main.basedir>${basedir}/..</main.basedir>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.thebkutils</groupId>
+			<artifactId>thebk-core</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>com.fasterxml.jackson.core</groupId>
+		    <artifactId>jackson-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>

@@ -1,14 +1,14 @@
 package com.thebk.utils;
 
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.concurrent.EventExecutorGroup;
 
-import java.util.concurrent.Executor;
 
 public class DefaultSystems {
-	private static Executor m_defaultTaskExec;
+	private static EventExecutorGroup m_defaultTaskExec;
 	private static ByteBufAllocator m_allocator;
 
-	public static final Executor taskExecutor() {
+	public static final EventExecutorGroup taskExecutor() {
 		return m_defaultTaskExec;
 	}
 
@@ -16,7 +16,7 @@ public class DefaultSystems {
 		return m_allocator;
 	}
 
-	public static final void setDefaultTaskExecutor(Executor executor) {
+	public static final void setDefaultTaskExecutor(EventExecutorGroup executor) {
 		m_defaultTaskExec = executor;
 	}
 

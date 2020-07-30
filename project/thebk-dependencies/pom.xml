@@ -20,7 +20,7 @@
         <log4j2.version>2.11.1</log4j2.version>
         <slf4j.version>1.7.25</slf4j.version>
         <junit-jupiter.version>5.5.1</junit-jupiter.version>
-        <netty.version>4.1.42.Final</netty.version>
+        <netty.version>4.1.51.Final</netty.version>
 
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
@@ -41,64 +41,69 @@
         <dependencies>
             <!-- Framework -->
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-base-api</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-core</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-logging-impl-log4j2</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-app-base</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-logging-impl-jul</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-logging-impl-log4j2</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-core</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-logging-impl-jul</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-core-test</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-app</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-mongo</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-app-test</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-http-server</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-mongo</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-http-client</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-app-http-server</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-socket</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-app-http-client</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-json</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-app-socket</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-starter-service</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-json</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-starter-service</artifactId>
                 <version>${revision}</version>
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>com.denaliai.fw</groupId>
-                <artifactId>fw-starter-app</artifactId>
+                <groupId>com.thebkutils</groupId>
+                <artifactId>thebk-starter-app</artifactId>
                 <version>${revision}</version>
                 <type>pom</type>
             </dependency>
@@ -124,6 +129,11 @@
                 <artifactId>log4j-slf4j-impl</artifactId>
                 <version>${log4j2.version}</version>
             </dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-1.2-api</artifactId>
+                <version>${log4j2.version}</version>
+			</dependency>		
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
@@ -138,6 +148,13 @@
                 <type>pom</type>
             </dependency>
 
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>

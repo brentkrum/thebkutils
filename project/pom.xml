@@ -68,18 +68,21 @@
 	<modules>
 		<module>thebk-dependencies</module>
 		<module>thebk-parent</module>
+		<module>thebk-core-parent</module>
 		<module>thebk-core</module>
-		<!-- <module>fw-base-api</module>
-		<module>fw-logging-impl-log4j2</module>
-		<module>fw-logging-impl-jul</module>
-		<module>fw-core</module>
-		<module>fw-core-test</module>
-		<module>fw-json</module>
-		<module>fw-socket</module>
+		<module>thebk-app-base</module>
+		<module>thebk-app</module>
+		<module>thebk-logging-impl-log4j2</module>
+		<module>thebk-logging-impl-jul</module>
+		<module>thebk-app-test</module>
+		<module>thebk-json</module>
+		<module>thebk-app-socket</module>
+		<module>thebk-app-http-server</module>
+		<module>thebk-app-http-client</module>
+		<module>thebk-app-starters</module>
+<!--
 		<module>fw-mongo</module>
-		<module>fw-http-server</module>
-		<module>fw-http-client</module>
-		<module>fw-starters</module> -->
+-->
 	</modules>
 
 </project>
