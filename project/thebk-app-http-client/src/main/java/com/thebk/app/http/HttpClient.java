@@ -2,6 +2,9 @@ package com.thebk.app.http;
 
 import com.thebk.app.Application;
 import com.thebk.utils.concurrent.PerpetualWork;
+import com.thebk.utils.concurrent.RCFuture;
+import com.thebk.utils.concurrent.RCPromise;
+import com.thebk.utils.concurrent.StaticRCPromise;
 import com.thebk.utils.config.Config;
 import com.thebk.utils.metrics.*;
 import io.netty.buffer.ByteBuf;
@@ -35,8 +38,8 @@ public class HttpClient {
 
 	private final AtomicInteger m_requestNum = new AtomicInteger();
 	private final Worker m_worker = new Worker();
-	private final Promise<Void> m_startPromise = Application.newPromise();
-	private final Promise<Void> m_stopPromise = Application.newPromise();
+	private final RCPromise<Void> m_startPromise = StaticRCPromise.create();
+	private final RCPromise<Void> m_stopPromise = StaticRCPromise.create();
 	private volatile boolean m_requestStart;
 	private volatile boolean m_requestStop;
 	private Queue<HttpClientRequest> m_requestQueue = PlatformDependent.newMpscQueue();
@@ -55,7 +58,7 @@ public class HttpClient {
 		m_keepAlive = value;
 	}
 
-	public Future<Void> start() {
+	public RCFuture<Void> start() {
 		if (!m_requestStart) {
 			m_requestStart = true;
 			m_worker.requestMoreWork();
@@ -63,7 +66,7 @@ public class HttpClient {
 		return m_startPromise;
 	}
 
-	public Future<Void> stop() {
+	public RCFuture<Void> stop() {
 		if (!m_requestStop) {
 			m_requestStop = true;
 			m_worker.requestMoreWork();

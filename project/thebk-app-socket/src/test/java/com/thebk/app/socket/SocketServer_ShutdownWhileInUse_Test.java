@@ -1,11 +1,11 @@
 package com.thebk.app.socket;
 
 import com.thebk.app.Application;
+import com.thebk.utils.concurrent.RCFuture;
 import com.thebk.utils.pipe.Pipe;
 import com.thebk.utils.socket.MinimalRawSocketExchange;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Assertions;
@@ -34,7 +34,7 @@ public class SocketServer_ShutdownWhileInUse_Test extends TestBase {
 				}
 			})
 			.build();
-		Assertions.assertTrue(socketServer.start().awaitUninterruptibly(1000));
+		Assertions.assertTrue(socketServer.start().await(1000));
 
 		CountDownLatch submitStartedLatch = new CountDownLatch(1);
 		CountDownLatch submitDoneLatch = new CountDownLatch(1);
@@ -58,7 +58,7 @@ public class SocketServer_ShutdownWhileInUse_Test extends TestBase {
 		Assertions.assertTrue(responsePromise.awaitUninterruptibly(5000));
 
 		// Start the server shutdown
-		Future<Void> stopDone = socketServer.stop();
+		RCFuture<Void> stopDone = socketServer.stop();
 
 		// Wait a little bit
 		Thread.sleep(250);
@@ -72,7 +72,7 @@ public class SocketServer_ShutdownWhileInUse_Test extends TestBase {
 		w.connection.close();
 
 		// The server should now stop
-		Assertions.assertTrue(stopDone.awaitUninterruptibly(5000));
+		Assertions.assertTrue(stopDone.await(5000));
 
 		// Check that our submit was good and didn't error out
 		Assertions.assertTrue(submitDoneLatch.await(5000, TimeUnit.MILLISECONDS));

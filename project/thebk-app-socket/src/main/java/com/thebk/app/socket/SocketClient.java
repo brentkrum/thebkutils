@@ -2,6 +2,9 @@ package com.thebk.app.socket;
 
 import com.thebk.app.Application;
 import com.thebk.utils.concurrent.PerpetualWork;
+import com.thebk.utils.concurrent.RCFuture;
+import com.thebk.utils.concurrent.RCPromise;
+import com.thebk.utils.concurrent.StaticRCPromise;
 import com.thebk.utils.config.Config;
 import com.thebk.utils.metrics.*;
 import com.thebk.utils.pipe.Pipe;
@@ -42,8 +45,8 @@ public class SocketClient {
 	private final int m_readTimeoutInMS;
 
 	private final AtomicInteger m_clientRefCount = new AtomicInteger();
-	private Promise<Void> m_startDonePromise;
-	private Promise<Void> m_stopDonePromise;
+	private RCPromise<Void> m_startDonePromise;
+	private RCPromise<Void> m_stopDonePromise;
 	private Channel m_clientConnection;
 	private enum ClientState {Offline, Registering, Connecting, Connected}
 	private volatile ClientState m_clientState = ClientState.Offline;
@@ -77,15 +80,15 @@ public class SocketClient {
 			.remoteAddress(m_host, m_port);
 	}
 
-	public synchronized Future<Void> start() {
+	public synchronized RCFuture<Void> start() {
 		if (m_stopDonePromise != null && !m_stopDonePromise.isDone()) {
-			return Application.newFailedFuture(new IllegalStateException("Attempt to start the server before stop() is complete"));
+			return StaticRCPromise.createFailed(new IllegalStateException("Attempt to start the server before stop() is complete"));
 		}
 		// start/stop maintains a ref count to the client
 		clientRetain();
 
 		m_stopDonePromise = null;
-		m_startDonePromise = Application.getTaskPool().next().newPromise();
+		m_startDonePromise = StaticRCPromise.create();
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Connecting to {}:{}", m_host, m_port);
@@ -104,11 +107,11 @@ public class SocketClient {
 		return m_startDonePromise;
 	}
 
-	public synchronized Future<Void> stop() {
+	public synchronized RCFuture<Void> stop() {
 		if (m_stopDonePromise != null) {
 			return m_stopDonePromise;
 		}
-		m_stopDonePromise = Application.getTaskPool().next().newPromise();
+		m_stopDonePromise = StaticRCPromise.create();
 
 		// In normal circumstances, m_startDonePromise is already done so
 		// it will just call this listener

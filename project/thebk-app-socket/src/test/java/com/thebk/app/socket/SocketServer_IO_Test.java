@@ -18,7 +18,7 @@ public class SocketServer_IO_Test extends TestBase {
 	public void testNullHandler() throws IOException {
 		SocketServer socketServer = SocketServer.builder(10000).build();
 		CountDownLatch latch = new CountDownLatch(1);
-		Assertions.assertTrue(socketServer.start().awaitUninterruptibly(1000));
+		Assertions.assertTrue(socketServer.start().await(1000));
 
 		String responseData = MinimalRawSocketExchange.submit("localhost", 10000, "REQUEST");
 		Assertions.assertEquals("REQUEST", responseData);
@@ -39,7 +39,7 @@ public class SocketServer_IO_Test extends TestBase {
 		Assertions.assertTrue(onDisconnect, "Did not find onDisconnect");
 		Assertions.assertTrue(onData, "Did not find onData");
 
-		Assertions.assertTrue(socketServer.stop().awaitUninterruptibly(1000));
+		Assertions.assertTrue(socketServer.stop().await(1000));
 	}
 
 	@Test
@@ -58,12 +58,12 @@ public class SocketServer_IO_Test extends TestBase {
 				conn.close();
 			})
 			.build();
-		Assertions.assertTrue(httpServer.start().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.start().await(1000));
 
 		String responseData = MinimalRawSocketExchange.submit("localhost", 10000, "REQUEST");
 		Assertions.assertEquals("RESPONSE", responseData);
 
-		Assertions.assertTrue(httpServer.stop().awaitUninterruptibly(1000));
+		Assertions.assertTrue(httpServer.stop().await(1000));
 	}
 
 }

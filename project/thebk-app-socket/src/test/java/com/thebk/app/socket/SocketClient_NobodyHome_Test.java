@@ -2,6 +2,7 @@ package com.thebk.app.socket;
 
 import com.thebk.app.Application;
 import com.thebk.app.test.AbstractTestBase;
+import com.thebk.utils.concurrent.RCFuture;
 import com.thebk.utils.pipe.Pipe;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
@@ -39,13 +40,13 @@ public class SocketClient_NobodyHome_Test extends AbstractTestBase {
 				connectedPromise.tryFailure(new IllegalStateException("onFailure should not be called", cause));
 			})
 			.build();
-		Future<Void> startFuture = client.start();
-		Future<Void> stopFuture = client.stop();
-		Assertions.assertTrue(startFuture.awaitUninterruptibly(1000));
+		RCFuture<Void> startFuture = client.start();
+		RCFuture<Void> stopFuture = client.stop();
+		Assertions.assertTrue(startFuture.await(1000));
 		Assertions.assertTrue(startFuture.isDone());
 		Assertions.assertFalse(startFuture.isSuccess());
 
-		Assertions.assertTrue(stopFuture.awaitUninterruptibly(1000));
+		Assertions.assertTrue(stopFuture.await(1000));
 		Assertions.assertTrue(stopFuture.isDone());
 		Assertions.assertTrue(stopFuture.isSuccess());
 

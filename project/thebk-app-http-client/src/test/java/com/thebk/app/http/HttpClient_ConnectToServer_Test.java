@@ -47,7 +47,7 @@ public class HttpClient_ConnectToServer_Test extends AbstractTestBase {
 		Assertions.assertTrue(httpServer.start().await(1000));
 
 		HttpClient client = new HttpClient();
-		Assertions.assertTrue(client.start().awaitUninterruptibly(1000));
+		Assertions.assertTrue(client.start().await(1000));
 
 		LinkedList<Promise<String>> promises = new LinkedList<>();
 		for(int i=0; i<16; i++) {
@@ -76,7 +76,7 @@ public class HttpClient_ConnectToServer_Test extends AbstractTestBase {
 			Assertions.assertEquals("GOOD", responsePromise.getNow());
 		}
 
-		Assertions.assertTrue(client.stop().awaitUninterruptibly(1000));
+		Assertions.assertTrue(client.stop().await(1000));
 		Assertions.assertTrue(httpServer.stop().await(1000));
 
 		TestUtils.snapshotAndPrintCounters();

@@ -26,6 +26,14 @@ public class StaticRCPromise<T> extends TheBKPromise<T> implements ReferenceCoun
     }
 
     @SuppressWarnings("unchecked")
+    public static <T> StaticRCPromise<T> createFailed(Executor executor, Throwable cause) {
+        StaticRCPromise<T> p = new StaticRCPromise<T>();
+        p.init(executor);
+        p.setFailure(cause);
+        return p;
+    }
+
+    @SuppressWarnings("unchecked")
     public static <T> StaticRCPromise<T> create() {
         StaticRCPromise<T> p = new StaticRCPromise<T>();
         p.init(DefaultSystems.taskExecutor());
@@ -37,6 +45,14 @@ public class StaticRCPromise<T> extends TheBKPromise<T> implements ReferenceCoun
         StaticRCPromise<T> p = new StaticRCPromise<T>();
         p.init(DefaultSystems.taskExecutor());
         p.setSuccess(result);
+        return p;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> StaticRCPromise<T> createFailed(Throwable cause) {
+        StaticRCPromise<T> p = new StaticRCPromise<T>();
+        p.init(DefaultSystems.taskExecutor());
+        p.setFailure(cause);
         return p;
     }
 

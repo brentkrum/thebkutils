@@ -41,7 +41,7 @@ public class SocketClient_ConnectToServer_Test extends AbstractTestBase {
 				conn.close();
 			})
 			.build();
-		Assertions.assertTrue(socketServer.start().awaitUninterruptibly(1000));
+		Assertions.assertTrue(socketServer.start().await(1000));
 
 		Wrapper wrapper = new Wrapper();
 		SocketClient client = SocketClient.builder("localhost", 10000).onConnect((conn, outPipe) -> {
@@ -59,17 +59,17 @@ public class SocketClient_ConnectToServer_Test extends AbstractTestBase {
 		}).build();
 		for(int i=0; i<16; i++) {
 			wrapper.reset();
-			Assertions.assertTrue(client.start().awaitUninterruptibly(1000));
+			Assertions.assertTrue(client.start().await(1000));
 			Assertions.assertTrue(wrapper.connectedPromise.awaitUninterruptibly(1000));
 			wrapper.connectedPromise.getNow().submit(ByteBufUtil.writeAscii(Application.allocator(), "REQUEST"));
 
 			Assertions.assertTrue(wrapper.responsePromise.awaitUninterruptibly(1000));
 			Assertions.assertTrue(wrapper.responsePromise.isSuccess());
 
-			Assertions.assertTrue(client.stop().awaitUninterruptibly(1000));
+			Assertions.assertTrue(client.stop().await(1000));
 		}
 
-		Assertions.assertTrue(socketServer.stop().awaitUninterruptibly(1000));
+		Assertions.assertTrue(socketServer.stop().await(1000));
 
 		TestUtils.snapshotAndPrintCounters();
 	}
