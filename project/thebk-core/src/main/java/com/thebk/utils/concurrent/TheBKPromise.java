@@ -1,6 +1,6 @@
 package com.thebk.utils.concurrent;
 
-import com.thebk.utils.parambag.CallbackParamBag;
+import com.thebk.utils.parambag.LocklessCallbackParamBag;
 import com.thebk.utils.parambag.ParamBag;
 import com.thebk.utils.rc.RCInteger;
 import io.netty.util.*;
@@ -75,7 +75,7 @@ abstract class TheBKPromise<T> implements RCPromise<T> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public RCFuture<T> addListener(CallbackParamBag params) {
+    public RCFuture<T> addListener(LocklessCallbackParamBag params) {
     	return addListener(null, params);
     }
 
@@ -444,7 +444,7 @@ abstract class TheBKPromise<T> implements RCPromise<T> {
         	if (listener == null) {
         		// Executor ref passed into CallbackParamBag
         		params.po(promise);
-				((CallbackParamBag)params).callback();
+				((LocklessCallbackParamBag)params).callback();
 			} else {
 				promise.notifyListener0(listener, params);
 				// Release the ref added before submitting to the executor

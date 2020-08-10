@@ -1,9 +1,7 @@
 package com.thebk.utils.parambag;
 
-import io.netty.util.*;
-
-class StaticCallbackParamBag extends CallbackParamBag {
-	StaticCallbackParamBag() {
+class StaticLocklessCallbackParamBag extends LocklessCallbackParamBag {
+	StaticLocklessCallbackParamBag() {
 		super(null);
 	}
 
@@ -13,12 +11,12 @@ class StaticCallbackParamBag extends CallbackParamBag {
 	}
 
 	@Override
-	public ReferenceCounted retain(int increment) {
+	public StaticLocklessCallbackParamBag retain(int increment) {
 		return this;
 	}
 
 	@Override
-	public ReferenceCounted touch() {
+	public StaticLocklessCallbackParamBag touch() {
 		return this;
 	}
 
@@ -33,12 +31,12 @@ class StaticCallbackParamBag extends CallbackParamBag {
 	}
 
 	@Override
-	public ReferenceCounted touch(Object hint) {
+	public StaticLocklessCallbackParamBag touch(Object hint) {
 		return this;
 	}
 
 	@Override
-	public StaticCallbackParamBag retain() {
+	public StaticLocklessCallbackParamBag retain() {
 		return this;
 	}
 }

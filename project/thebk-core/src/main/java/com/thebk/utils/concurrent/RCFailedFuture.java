@@ -1,6 +1,6 @@
 package com.thebk.utils.concurrent;
 
-import com.thebk.utils.parambag.CallbackParamBag;
+import com.thebk.utils.parambag.LocklessCallbackParamBag;
 import com.thebk.utils.parambag.ParamBag;
 import io.netty.util.*;
 
@@ -55,7 +55,7 @@ public class RCFailedFuture<T> extends AbstractReferenceCounted implements RCFut
 	 * @return
 	 */
 	@Override
-	public RCFuture<T> addListener(CallbackParamBag params) {
+	public RCFuture<T> addListener(LocklessCallbackParamBag params) {
 		// Ref passed to callback()
 		params.callback();
 		return this;

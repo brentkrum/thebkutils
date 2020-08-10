@@ -2,6 +2,9 @@ package com.thebk.utils.concurrent;
 
 import com.thebk.utils.DefaultSystems;
 import com.thebk.utils.parambag.CallbackParamBag;
+import com.thebk.utils.parambag.LocklessCallbackParamBag;
+import com.thebk.utils.parambag.ParameterizedCallback;
+import com.thebk.utils.parambag.ParameterizedCallbackParamBag;
 import com.thebk.utils.queue.MPSCUnboundedQueue;
 import com.thebk.utils.queue.TheBKQueue;
 import com.thebk.utils.rc.RCBoolean;
@@ -54,11 +57,13 @@ public class LocklessProcessing {
      *
      */
     public final void runWork(CallbackParamBag bag) {
-        if (currentThreadIsWorker() && callbackDepthOk()) {
+        // If we are requesting runWork on a bag who is a callback of this lockess and we already own the lock and
+        // we have not exceeded the callback depth, then call it directly
+        if (bag instanceof LocklessCallbackParamBag && ((LocklessCallbackParamBag)bag).processing() == this && currentThreadIsWorker() && callbackDepthOk()) {
             RCInteger rci = m_callbackDepth.get();
             rci.increment();
             try {
-                bag.locklessCallback();
+                ((LocklessCallbackParamBag)bag).locklessCallback();
             } finally {
                 rci.decrement();
             }
