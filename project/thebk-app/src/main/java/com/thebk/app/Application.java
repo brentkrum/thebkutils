@@ -161,6 +161,7 @@ public class Application {
 			} catch (Exception ex) {
 				LOG.error("Exception in user shutdown handler", ex);
 			}
+			shutdownDone.release();
 			LOG.debug("Shutdown handler done");
 		}
 		finalTerminate();
