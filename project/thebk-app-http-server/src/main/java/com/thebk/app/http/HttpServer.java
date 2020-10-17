@@ -35,6 +35,7 @@ public final class HttpServer {
 	private static final String DEFAULT_SSL_PROTOCOL = "TLSv1.2";
 	private static final int SERVER_BACKLOG = Config.getInt(Application.CONFIG_FW_PREFIX + "http.HttpServer.defaultServerSocketBacklog", 128);
 	private static final int MAX_CONTENT_SIZE = Config.getInt(Application.CONFIG_FW_PREFIX + "http.HttpServer.maxContentSize", 512*1024);
+	private static final boolean CORS_ALWAYS = Config.getBoolean(Application.CONFIG_FW_PREFIX + "http.HttpServer.alwaysUseAccessControl", false);
 	private static final String ACCESS_CONTROL_ALLOW_ORIGIN = Config.getString(Application.CONFIG_FW_PREFIX + "http.HttpServer.accessControlAllowOrigin", null);
 	private static final String ACCESS_CONTROL_ALLOW_METHODS = Config.getString(Application.CONFIG_FW_PREFIX + "http.HttpServer.accessControlAllowMethods", null);
 	private static final String ACCESS_CONTROL_ALLOW_HEADERS = Config.getString(Application.CONFIG_FW_PREFIX + "http.HttpServer.accessControlAllowHeaders", null);
@@ -634,7 +635,7 @@ public final class HttpServer {
 			headers.add(HttpHeaderNames.CONTENT_LENGTH, data.readableBytes());
 
 			String secFetchMode = m_httpRequest.headers().get("sec-fetch-mode");
-			if ("cors".equals(secFetchMode)) {
+			if ("cors".equals(secFetchMode) || CORS_ALWAYS) {
 				if (ACCESS_CONTROL_ALLOW_ORIGIN != null) {
 					headers.add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ALLOW_ORIGIN);
 				}
