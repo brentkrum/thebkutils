@@ -56,7 +56,7 @@ final class MetricDataInstance {
 		m_data = newData;
 	}
 
-	public boolean add(int index, int value) {
+	public boolean add(int index, long value) {
 		if (!lock()) {
 			return false;
 		}
@@ -119,7 +119,7 @@ final class MetricDataInstance {
 		return true;
 	}
 
-	public boolean set(MinMaxAvgValueMetric m, int value) {
+	public boolean set(MinMaxAvgValueMetric m, long value) {
 		if (!lock()) {
 			return false;
 		}
