@@ -15,10 +15,10 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.internal.PlatformDependent;
 import org.slf4j.Logger;
@@ -370,10 +370,6 @@ public final class HttpServer {
 					}
 				}
 
-				// TODO THIS IS NEEDED FOR SENDING MULTIPLE REQUESTS ON THE SAME CONNECTION <---------------------------------------------------------------------------------------------------------------------
-				// We have the full message, no need for timeout anymore
-				//ctx.pipeline().remove("read-timeout");
-
 				if (LOG.isDebugEnabled()) {
 					final StringBuilder sb = new StringBuilder();
 					final HttpHeaders headers = req.headers();
@@ -556,6 +552,7 @@ public final class HttpServer {
 		private HttpMethod m_httpRequestMethod;
 		private FullHttpRequest m_httpRequest;
 		private Map<String,String> m_responseHeaders;
+		private boolean m_updatedReadTimeout;
 
 		Connection(String connectionToString, Channel channel) {
 			m_connectionToString = connectionToString;
@@ -657,6 +654,18 @@ public final class HttpServer {
 		}
 
 		@Override
+		public void updateReadTimeout(long newTimeoutInMS) {
+			m_updatedReadTimeout = true;
+			m_channel.pipeline().replace("read-timeout", "read-timeout", new ReadTimeoutHandler(newTimeoutInMS, TimeUnit.MILLISECONDS));
+		}
+
+		@Override
+		public void clearReadTimeout() {
+			m_updatedReadTimeout = true;
+			m_channel.pipeline().replace("read-timeout", "read-timeout", new IdleStateHandler(0, 0, 0));
+		}
+
+		@Override
 		public String toString() {
 			return m_connectionToString;
 		}
@@ -674,6 +683,11 @@ public final class HttpServer {
 			if (m_requestTimer != null) {
 				m_requestTimer.close();
 				m_requestTimer = null;
+			}
+			if (m_updatedReadTimeout) {
+				// Restore default
+				m_updatedReadTimeout = true;
+				m_channel.pipeline().replace("read-timeout", "read-timeout", new ReadTimeoutHandler(m_readTimeoutInMS, TimeUnit.MILLISECONDS));
 			}
 		}
 
@@ -864,6 +878,8 @@ public final class HttpServer {
 		void addHeader(String key, String value);
 		void respondOk(ByteBuf data);
 		void respond(HttpResponseStatus httpResponseStatus, ByteBuf data);
+		void clearReadTimeout();
+		void updateReadTimeout(long newTimeoutInMS);
 	}
 	public interface IConnectHandler {
 		void onConnect(ISocketConnection connection);
