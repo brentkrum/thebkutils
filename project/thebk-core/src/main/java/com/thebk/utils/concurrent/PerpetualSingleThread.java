@@ -68,8 +68,8 @@ public abstract class PerpetualSingleThread extends FastThreadLocalThread {
 				performWork();
 			}
 
-		} catch(Exception ex) {
-			onUnhandled(ex);
+		} catch(Throwable t) {
+			onUnhandled(t);
 			m_completion.setFailure(null).release();
 			return;
 		}
@@ -80,5 +80,5 @@ public abstract class PerpetualSingleThread extends FastThreadLocalThread {
 	protected abstract void performWork();
 	protected abstract void onStart();
 	protected abstract void onStop();
-	protected abstract void onUnhandled(Exception ex);
+	protected abstract void onUnhandled(Throwable t);
 }

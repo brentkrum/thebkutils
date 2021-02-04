@@ -27,12 +27,21 @@ public final class Config {
 		final String addPropsFilesToSysProps = "Config.addPropsFilesToSysProps";
 		ADD_PROPS_FILES_TO_SYS_PROPS = "true".equals(System.getenv().get(addPropsFilesToSysProps)) || "true".equals(System.getProperty(addPropsFilesToSysProps));
 
+		final String defaultAppProperties = "Config.defaultAppPropertiesFilename";
+		String defaultAppPropertiesFilename = System.getenv().get(defaultAppProperties);
+		if (defaultAppPropertiesFilename == null) {
+			defaultAppPropertiesFilename = System.getProperty(defaultAppProperties);
+		}
+		if (defaultAppPropertiesFilename == null) {
+			defaultAppPropertiesFilename = "app.properties";
+		}
+
 		try {
 			addConfigDataset("environment", System.getenv().entrySet());
 			addConfigDataset("system-properties", System.getProperties().entrySet());
 
 			// Load the default properties file name
-			loadConfigFile("app.properties", false);
+			loadConfigFile(defaultAppPropertiesFilename, false);
 
 			// Load user-defined properties files
 			final String propFiles = getString("Config.propertiesFiles", null);

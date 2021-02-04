@@ -1,5 +1,6 @@
 package com.thebk.app.log4j2;
 
+import com.thebk.utils.config.Config;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.core.LogEvent;
@@ -11,7 +12,7 @@ import org.apache.logging.log4j.message.Message;
 
 @Plugin(name = "ConsoleDisableFilter", category = "Core", elementType = "filter", printObject = true)
 public final class ConsoleDisableFilter extends AbstractFilter {
-	private static final boolean DISABLED = System.getProperty("com.thebk.app.log4j.disable-console", "false").equals("true");
+	private static final boolean DISABLED = Config.getBoolean("com.thebk.app.log4j.disable-console", false);
 
 	private ConsoleDisableFilter() {
 		super(Result.NEUTRAL, Result.NEUTRAL);
