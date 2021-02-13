@@ -9,6 +9,7 @@ import com.thebk.utils.config.Config;
 import com.thebk.utils.metrics.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
@@ -17,6 +18,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedNioFile;
+import io.netty.handler.stream.ChunkedStream;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -41,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_0;
 
 public final class HttpServer {
@@ -573,6 +576,12 @@ public final class HttpServer {
 			m_channel = channel;
 		}
 
+		private void clearReadTimeout() {
+			m_updatedReadTimeout = true;
+			// Need to leave the handler in its place, so replace it with something that does nothing
+			m_channel.pipeline().replace("read-timeout", "read-timeout", new IdleStateHandler(0, 0, 0));
+		}
+
 		void callOnConnect() {
 			m_msgQueue.add(m_onConnect);
 			requestMoreWork();
@@ -640,7 +649,7 @@ public final class HttpServer {
 		}
 
 		@Override
-		public void respondOk(File file, int httpCacheSeconds) {
+		public void respondOkWithFile(File file, int httpCacheSeconds) {
 			final SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
 			dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -717,6 +726,69 @@ public final class HttpServer {
 		}
 
 		@Override
+		public void respondOkWithFileData(ByteBuf data, String fileName, long lastModifiedTime, int httpCacheSeconds) {
+			final SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
+			dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+			// Cache Validation
+			String ifModifiedSince = m_httpRequest.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);
+			if (ifModifiedSince != null && !ifModifiedSince.isEmpty()) {
+				final Date ifModifiedSinceDate;
+				try {
+					ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
+				} catch(ParseException ex) {
+					respond(BAD_REQUEST, Unpooled.EMPTY_BUFFER);
+					return;
+				}
+
+				// Only compare up to the second because the datetime format we send to the client
+				// does not have milliseconds
+				long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
+				long fileLastModifiedSeconds = lastModifiedTime / 1000;
+				if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
+					respond(NOT_MODIFIED, Unpooled.EMPTY_BUFFER);
+					return;
+				}
+			}
+
+			final DefaultHttpResponse response;
+			final HttpChunkedInput responseBody;
+			final long fileLength = data.readableBytes();
+			response = new DefaultHttpResponse(m_httpRequestProtocolVersion, HttpResponseStatus.OK);
+			responseBody = new HttpChunkedInput(new ChunkedStream(new ByteBufInputStream(data,true), 8192));
+			final HttpHeaders headers = response.headers();
+
+			final String contentType = m_mimeTypesMap.getContentType(fileName);
+			headers.set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
+			headers.set(HttpHeaderNames.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+			headers.add(HttpHeaderNames.CONTENT_LENGTH, fileLength);
+			headers.add(HttpHeaderNames.CONTENT_TYPE, contentType);
+			setCORSHeaders(headers);
+			setConnectionHeader(headers);
+
+			final Calendar time = new GregorianCalendar();
+
+			// Date header
+			addHeader(HttpHeaderNames.DATE.toString(), dateFormatter.format(time.getTimeInMillis()));
+
+			// Add cache headers
+			time.add(Calendar.SECOND, httpCacheSeconds);
+			addHeader(HttpHeaderNames.EXPIRES.toString(), dateFormatter.format(time.getTimeInMillis()));
+			addHeader(HttpHeaderNames.CACHE_CONTROL.toString(), "private, max-age=" + httpCacheSeconds);
+			addHeader(HttpHeaderNames.LAST_MODIFIED.toString(), dateFormatter.format(lastModifiedTime));
+
+			if (m_responseHeaders != null) {
+				for (Map.Entry<String, String> e : m_responseHeaders.entrySet()) {
+					headers.add(e.getKey(), e.getValue());
+				}
+				m_responseHeaders = null;
+			}
+			m_msgQueue.add(response);
+			m_msgQueue.add(responseBody);
+			requestMoreWork();
+		}
+
+		@Override
 		public void respond(HttpResponseStatus httpResponseStatus, ByteBuf data) {
 			DefaultFullHttpResponse response = new DefaultFullHttpResponse(m_httpRequestProtocolVersion, httpResponseStatus, data);
 			HttpHeaders headers = response.headers();
@@ -773,22 +845,6 @@ public final class HttpServer {
 		}
 
 		@Override
-		public void setStaticContentHeaders(long itemLastModified, String contentType, int httpCacheSeconds) {
-			final SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
-			dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-			final Calendar time = new GregorianCalendar();
-
-			// Date header
-			addHeader(HttpHeaderNames.DATE.toString(), dateFormatter.format(time.getTimeInMillis()));
-
-			// Add cache headers
-			time.add(Calendar.SECOND, httpCacheSeconds);
-			addHeader(HttpHeaderNames.EXPIRES.toString(), dateFormatter.format(time.getTimeInMillis()));
-			addHeader(HttpHeaderNames.CACHE_CONTROL.toString(), "private, max-age=" + httpCacheSeconds);
-			addHeader(HttpHeaderNames.LAST_MODIFIED.toString(), dateFormatter.format(itemLastModified));
-		}
-
-		@Override
 		public void setDynamicContentHeaders(String contentType) {
 			final SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
 			dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -799,18 +855,6 @@ public final class HttpServer {
 			addHeader(HttpHeaderNames.CACHE_CONTROL.toString(), "no-cache, no-store, must-revalidate");
 			addHeader(HttpHeaderNames.PRAGMA.toString(), "no-cache");
 			addHeader(HttpHeaderNames.EXPIRES.toString(), "0");
-		}
-
-		@Override
-		public void updateReadTimeout(long newTimeoutInMS) {
-			m_updatedReadTimeout = true;
-			m_channel.pipeline().replace("read-timeout", "read-timeout", new ReadTimeoutHandler(newTimeoutInMS, TimeUnit.MILLISECONDS));
-		}
-
-		@Override
-		public void clearReadTimeout() {
-			m_updatedReadTimeout = true;
-			m_channel.pipeline().replace("read-timeout", "read-timeout", new IdleStateHandler(0, 0, 0));
 		}
 
 		@Override
@@ -874,8 +918,10 @@ public final class HttpServer {
 
 					if (!m_httpRequest.decoderResult().isSuccess()) {
 						respond(BAD_REQUEST, Unpooled.EMPTY_BUFFER);
+						endRequest();
 
 					} else {
+						clearReadTimeout();
 						// The user may hold onto the objects passed in and choose to reply later.  If the user DOES NOT
 						// call one of the respond() methods in IHttpResponse we will leak the request
 						try {
@@ -905,7 +951,7 @@ public final class HttpServer {
 						final boolean shuttingDown = (m_stopDonePromise != null);
 						// If we are shutting down, need to make sure we close the connection (after this request is sent)
 						if (shuttingDown) {
-							response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+							response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
 						}
 						m_context.writeAndFlush(response).addListener((f) -> {
 							if (requestTimer == null) {
@@ -982,6 +1028,7 @@ public final class HttpServer {
 					} catch (Throwable t) {
 						LOG.warn("Uncaught exception from " + m_failureHandler.getClass().getName(), t);
 					}
+					endRequest();
 
 				}
 			}
@@ -1082,16 +1129,13 @@ public final class HttpServer {
 	}
 	public interface IHttpResponse {
 		void addHeader(String key, String value);
-		void setStaticContentHeaders(long itemLastModified, String contentType, int httpCacheSeconds);
 		void setDynamicContentHeaders(String contentType);
 
 		void respondOk(ByteBuf data);
-		void respondOk(File file, int httpCacheSeconds);
+		void respondOkWithFile(File file, int httpCacheSeconds);
+		void respondOkWithFileData(ByteBuf data, String fileName, long lastModifiedTime, int httpCacheSeconds);
 		void respond(HttpResponseStatus httpResponseStatus, ByteBuf data);
 		void respondNotModified();
-
-		void clearReadTimeout();
-		void updateReadTimeout(long newTimeoutInMS);
 	}
 	public interface IConnectHandler {
 		void onConnect(ISocketConnection connection);
