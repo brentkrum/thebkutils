@@ -649,7 +649,7 @@ public final class HttpServer {
 		}
 
 		@Override
-		public void respondOkWithFile(File file, int httpCacheSeconds) {
+		public void respondOkWithFile(File file, boolean downloadFile, int httpCacheSeconds) {
 			final SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
 			dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -686,7 +686,9 @@ public final class HttpServer {
 
 				final String contentType = m_mimeTypesMap.getContentType(file);
 				headers.set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
-				headers.set(HttpHeaderNames.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"");
+				if (downloadFile) {
+					headers.set(HttpHeaderNames.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"");
+				}
 				headers.add(HttpHeaderNames.CONTENT_LENGTH, fileLength);
 				headers.add(HttpHeaderNames.CONTENT_TYPE, contentType);
 				setCORSHeaders(headers);
@@ -726,7 +728,7 @@ public final class HttpServer {
 		}
 
 		@Override
-		public void respondOkWithFileData(ByteBuf data, String fileName, long lastModifiedTime, int httpCacheSeconds) {
+		public void respondOkWithFileData(ByteBuf data, String fileName, long lastModifiedTime, boolean downloadFile, int httpCacheSeconds) {
 			final SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
 			dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -760,7 +762,9 @@ public final class HttpServer {
 
 			final String contentType = m_mimeTypesMap.getContentType(fileName);
 			headers.set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
-			headers.set(HttpHeaderNames.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+			if (downloadFile) {
+				headers.set(HttpHeaderNames.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+			}
 			headers.add(HttpHeaderNames.CONTENT_LENGTH, fileLength);
 			headers.add(HttpHeaderNames.CONTENT_TYPE, contentType);
 			setCORSHeaders(headers);
@@ -1132,8 +1136,8 @@ public final class HttpServer {
 		void setDynamicContentHeaders(String contentType);
 
 		void respondOk(ByteBuf data);
-		void respondOkWithFile(File file, int httpCacheSeconds);
-		void respondOkWithFileData(ByteBuf data, String fileName, long lastModifiedTime, int httpCacheSeconds);
+		void respondOkWithFile(File file, boolean downloadFile, int httpCacheSeconds);
+		void respondOkWithFileData(ByteBuf data, String fileName, long lastModifiedTime, boolean downloadFile, int httpCacheSeconds);
 		void respond(HttpResponseStatus httpResponseStatus, ByteBuf data);
 		void respondNotModified();
 	}
