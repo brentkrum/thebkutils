@@ -188,23 +188,24 @@ public final class Config {
 	}
 	public static Integer getInt(final String key, final int min, final int max, final Integer defaultValue, final boolean suppressValueLogging) {
 		final Integer value = (Integer)getValue(key, defaultValue, suppressValueLogging, m_intGetter);
-		if (value != null) {
-			if (value < min) {
-				if (suppressValueLogging) {
-					LOG.warn("Resolved int value for key '%1$s' is below the minimum -- using default value instead", key);
-				} else {
-					LOG.warn("Resolved int value for key '%1$s' %2$s is below the minimum of %3$s -- using default value of %4$s instead", key, value, min, defaultValue);
-				}
-				return defaultValue;
+		if (value == null) {
+			return defaultValue;
+		}
+		if (value < min) {
+			if (suppressValueLogging) {
+				LOG.warn("Resolved int value for key '%1$s' is below the minimum -- using default value instead", key);
+			} else {
+				LOG.warn("Resolved int value for key '%1$s' %2$s is below the minimum of %3$s -- using default value of %4$s instead", key, value, min, defaultValue);
 			}
-			if (value > max) {
-				if (suppressValueLogging) {
-					LOG.warn("Resolved int value for key '%1$s' is above the maximum -- using default value instead", key);
-				} else {
-					LOG.warn("Resolved int value for key '%1$s' %2$s is above the maximum of %3$s -- using default value of %4$s instead", key, value, max, defaultValue);
-				}
-				return defaultValue;
+			return defaultValue;
+		}
+		if (value > max) {
+			if (suppressValueLogging) {
+				LOG.warn("Resolved int value for key '%1$s' is above the maximum -- using default value instead", key);
+			} else {
+				LOG.warn("Resolved int value for key '%1$s' %2$s is above the maximum of %3$s -- using default value of %4$s instead", key, value, max, defaultValue);
 			}
+			return defaultValue;
 		}
 		return value;
 	}
@@ -217,6 +218,9 @@ public final class Config {
 	}
 	public static Long getLong(final String key, final long min, final long max, final Long defaultValue, final boolean suppressValueLogging) {
 		final Long value = (Long)getValue(key, defaultValue, suppressValueLogging, m_longGetter);
+		if (value == null) {
+			return defaultValue;
+		}
 		if (value < min) {
 			if (suppressValueLogging) {
 				LOG.warn("Resolved long value for key '%1$s' is below the minimum -- using default value instead", key);
