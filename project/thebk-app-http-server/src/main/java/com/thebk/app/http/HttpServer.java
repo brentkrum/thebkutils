@@ -813,7 +813,7 @@ public final class HttpServer {
 
 		private void setCORSHeaders(HttpHeaders headers) {
 			String secFetchMode = m_httpRequest.headers().get("sec-fetch-mode");
-			if ("cors".equals(secFetchMode)) {
+			if (CORS_ALWAYS || "cors".equals(secFetchMode)) {
 				if (ACCESS_CONTROL_ALLOW_ORIGIN != null) {
 					headers.add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ALLOW_ORIGIN);
 				}
